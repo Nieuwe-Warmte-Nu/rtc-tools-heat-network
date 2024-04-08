@@ -21,9 +21,9 @@ sys.path.insert(0, os.path.abspath('../src'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Nieuwe Warmte Nu - Design Toolkit'
-author = 'Kelbij Star, Teresa Piovesan, et al.'
-review = 'Jesus Andres Rodriguez Sarasty, Ivo Pothof, Mike van Meerkerk'
+project = 'Multi-Energy-Systems Integrated Design and Operations'
+author = 'Jim Rojer, Kobus van Rooyen and Femke Janssen'
+review = 'Kobus van Rooyen and Femke Janssen'
 
 
 # -- General configuration ---------------------------------------------------
