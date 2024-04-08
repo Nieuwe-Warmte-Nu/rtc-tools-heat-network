@@ -90,6 +90,3 @@ html_static_path = ['_static']
 html_css_files = [
     'css/custom.css',
 ]
-
-# Intersphinx: refer to the RTC-Tools standard library.
-# intersphinx_mapping = {'rtctools': ('https://rtc-tools.readthedocs.io/en/latest/', None)}

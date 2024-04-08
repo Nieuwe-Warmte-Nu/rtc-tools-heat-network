@@ -3,6 +3,7 @@
 
    introduction
    code_structure
+   Workflows
    approach
    Validation_pipe_diameter_sizing
    pipe_classes
