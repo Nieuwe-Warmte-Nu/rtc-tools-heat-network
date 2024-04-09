@@ -13,6 +13,8 @@ import numpy as np
 
 import pandas as pd
 
+import pytz
+
 
 class MockInfluxDBProfileReader(InfluxDBProfileReader):
     def __init__(self, energy_system: esdl.EnergySystem, file_path: Optional[Path]):
@@ -53,10 +55,10 @@ class TestProfileLoading(unittest.TestCase):
         )
         problem.pre()
 
-        if not problem.io.reference_datetime.tzinfo:
-            ...
-        else:
-            np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
+        # The timezone setting is dependand on what is specificied
+        np.testing.assert_equal(
+            problem.io.reference_datetime.tzinfo, pytz.timezone("UTC") or datetime.timezone.utc
+        )
 
         # the three demands in the test ESDL
         for demand_name in ["HeatingDemand_2ab9", "HeatingDemand_6662", "HeatingDemand_506c"]:
