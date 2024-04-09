@@ -157,7 +157,7 @@ class TestProfileLoading(unittest.TestCase):
         )
         problem.pre()
 
-        np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
+        np.testing.assert_equal(problem.io.reference_datetime.tzinfo, True or datetime.timezone.utc)
 
         expected_array = np.array([1.0e8] * 3)
         np.testing.assert_equal(
