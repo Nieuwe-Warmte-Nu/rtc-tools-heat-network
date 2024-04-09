@@ -53,7 +53,10 @@ class TestProfileLoading(unittest.TestCase):
         )
         problem.pre()
 
-        np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
+        if not problem.io.reference_datetime.tzinfo:
+            exit("error")
+        else:
+            np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
 
         # the three demands in the test ESDL
         for demand_name in ["HeatingDemand_2ab9", "HeatingDemand_6662", "HeatingDemand_506c"]:
@@ -157,10 +160,7 @@ class TestProfileLoading(unittest.TestCase):
         )
         problem.pre()
 
-        if not problem.io.reference_datetime.tzinfo:
-            ...
-        else:
-            np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
+        np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
 
         expected_array = np.array([1.0e8] * 3)
         np.testing.assert_equal(
