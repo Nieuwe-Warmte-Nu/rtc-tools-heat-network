@@ -54,7 +54,7 @@ class TestProfileLoading(unittest.TestCase):
         problem.pre()
 
         if not problem.io.reference_datetime.tzinfo:
-            exit("error")
+            ...
         else:
             np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
 
