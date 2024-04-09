@@ -13,13 +13,15 @@ import numpy as np
 
 import pandas as pd
 
-import pytz
-
 
 class MockInfluxDBProfileReader(InfluxDBProfileReader):
     def __init__(self, energy_system: esdl.EnergySystem, file_path: Optional[Path]):
         super().__init__(energy_system, file_path)
-        self._loaded_profiles = pd.read_csv(file_path, index_col="DateTime", parse_dates=True)
+        self._loaded_profiles = pd.read_csv(
+            file_path,
+            index_col="DateTime",
+            date_parser=lambda x: pd.to_datetime(x).tz_convert(datetime.timezone.utc),
+        )
 
     def _load_profile_timeseries_from_database(self, profile: esdl.InfluxDBProfile) -> pd.Series:
         return self._loaded_profiles[profile.id]
@@ -55,10 +57,7 @@ class TestProfileLoading(unittest.TestCase):
         )
         problem.pre()
 
-        # The timezone setting is dependand on what is specificied
-        np.testing.assert_equal(
-            problem.io.reference_datetime.tzinfo, pytz.timezone("UTC") or datetime.timezone.utc
-        )
+        np.testing.assert_equal(problem.io.reference_datetime.tzinfo, datetime.timezone.utc)
 
         # the three demands in the test ESDL
         for demand_name in ["HeatingDemand_2ab9", "HeatingDemand_6662", "HeatingDemand_506c"]:
