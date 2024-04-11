@@ -49,7 +49,9 @@ class TestHeadLoss(TestCase):
                 # Do not delete: this is used to manualy check writing out of profile data
                 # def post(self):
                 #     super().post()
-                #     self._write_updated_esdl(self.get_energy_system_copy(), optimizer_sim=True)
+                #     self._write_updated_esdl(
+                #       self._ESDLMixin__energy_system_handler.energy_system, optimizer_sim=True
+                #   )
 
                 def energy_system_options(self):
                     options = super().energy_system_options()
@@ -77,7 +79,7 @@ class TestHeadLoss(TestCase):
 
             # Do not delete kwargs: this is used to manualy check writing out of profile data
             kwargs = {
-                "write_result_db_profiles": True,
+                "write_result_db_profiles": False,
                 "influxdb_host": "localhost",
                 "influxdb_port": 8086,
                 "influxdb_username": None,
