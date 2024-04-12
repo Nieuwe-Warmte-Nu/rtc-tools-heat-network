@@ -34,6 +34,9 @@ py37:linux:
   stage: test
   script:
     - tox -vv
+  artifacts: 
+    paths: ["PoC Tutorial_GrowOptimized.esdl"]
+    expire_in: 60 seconds
   image: python:3.7
   variables:
     TOXENV: py37
