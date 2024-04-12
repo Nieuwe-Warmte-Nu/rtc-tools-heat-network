@@ -60,19 +60,19 @@ jobs:
       # - name: test_deom
       #   run: echo "Demo" > Demo.txt
 
-      - name: Archive test artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: test_demo
-          # path: ./Demo.txt
-          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+      # - name: Archive test artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: test_demo
+      #     # path: ./Demo.txt
+      #     path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
       
-      - name: Archive test artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: test_demo
-          # path: ./Demo.txt
-          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+      # - name: Archive test artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: test_demo
+      #     # path: ./Demo.txt
+      #     path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
 
   documentation:
     name: Generate documentation
