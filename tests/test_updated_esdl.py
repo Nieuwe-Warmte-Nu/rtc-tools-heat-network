@@ -60,8 +60,7 @@ class TestUpdatedESDL(TestCase):
             "Area_a58a: Asset cost breakdown [EUR]",
         ]
         np.testing.assert_allclose(
-            len(optimized_energy_system.instance[0].area.KPIs.kpi),
-        number_of_kpis_top_level_in_esdl
+            len(optimized_energy_system.instance[0].area.KPIs.kpi), number_of_kpis_top_level_in_esdl
         )
         for ii in range(len(optimized_energy_system.instance[0].area.KPIs.kpi)):
             kpi_name = optimized_energy_system.instance[0].area.KPIs.kpi[ii].name
