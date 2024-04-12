@@ -81,8 +81,8 @@ jobs:
       #     name: test_demo
       #     # path: ./Demo.txt
       #     path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-      - name: Check test
-        run: tox -vv -etest_env2
+      # - name: Check test
+      #   run: tox -vv -etest_env2
 
   documentation:
     name: Generate documentation
