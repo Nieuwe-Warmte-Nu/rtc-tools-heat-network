@@ -34,9 +34,11 @@ py37:linux:
   stage: test
   script:
     - tox -vv
+    - echo "Demo" > Demo.txt
   artifacts: 
     paths: 
-      - examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+      - ./Demo.txt
+      # - ./PoC Tutorial_GrowOptimized.esdl
     expire_in: 1 week
   image: python:3.7
   variables:
