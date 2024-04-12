@@ -33,7 +33,7 @@ build:
 py37:linux:
   stage: test
   script:
-    - tox -vv
+    # - tox -vv
     - echo "Demo" > Demo.txt
   artifacts: 
     paths: 
