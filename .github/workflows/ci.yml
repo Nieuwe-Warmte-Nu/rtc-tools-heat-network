@@ -56,7 +56,13 @@ jobs:
         run: python -m pip install -U tox
 
       - name: Check test
-        run: tox -vv -etest_env2
+        run: tox -vv -etest_env1
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated_esdl
+          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
       # - name: test_deom
       #   run: echo "Demo" > Demo.txt
 
@@ -73,6 +79,8 @@ jobs:
       #     name: test_demo
       #     # path: ./Demo.txt
       #     path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+      - name: Check test
+        run: tox -vv -etest_env2
 
   documentation:
     name: Generate documentation
