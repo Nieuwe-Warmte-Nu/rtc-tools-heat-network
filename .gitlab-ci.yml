@@ -36,7 +36,7 @@ py37:linux:
     - tox -vv
   artifacts: 
     paths: 
-      - examples/PoCTutorial/model
+      - /home/runner/work/mesido/mesido/examples/PoCTutorial/model
     expire_in: 1 week
   image: python:3.7
   variables:
