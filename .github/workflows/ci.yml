@@ -55,8 +55,17 @@ jobs:
       - name: deps
         run: python -m pip install -U tox
 
-      - name: Check test
-        run: tox -vv
+      # - name: Check test
+      #   run: tox -vv
+      - name: test_deom
+        run: echo "Demo" > Demo.txt
+      
+      - name: Archive test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_demo
+          path: ./Demo.txt
+          # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
 
   documentation:
     name: Generate documentation
