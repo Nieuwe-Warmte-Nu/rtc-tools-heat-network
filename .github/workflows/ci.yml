@@ -58,23 +58,25 @@ jobs:
       - name: Check test
         run: tox -vv -etest_env1
 
-      - name: Upload results
-        uses: actions/upload-artifact@v4
-        with:
-          name: updated_esdl
-          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-      # - name: test_deom
-      #   run: echo "Demo" > Demo.txt
-
-      # - name: Archive test artifacts
-      #   uses: actions/download-artifact@v4
+      # - name: Upload results
+      #   uses: actions/upload-artifact@v4
       #   with:
-      #     name: test_demo
-      #     # path: ./Demo.txt
+      #     name: updated_esdl
       #     path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+# Dummy example
+# -------------------------------------------------------------------------------------------
+      - name: test_deom
+        run: echo "Demo" > Demo.txt
+
+      - name: Archive test artifacts
+        uses: actions/upload-artifact@v4 
+        with:
+          name: test_demo
+          path: ./Demo.txt
+# -------------------------------------------------------------------------------------------
       
       # - name: Archive test artifacts
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/download-artifact@v4
       #   with:
       #     name: test_demo
       #     # path: ./Demo.txt

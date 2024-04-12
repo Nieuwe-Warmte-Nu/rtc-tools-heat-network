@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest import TestCase
 
 from mesido.esdl.esdl_parser import ESDLFileParser
-from mesido.workflows import run_end_scenario_sizing
+from mesido.workflows import EndScenarioSizingStagedHIGHS
 
 import numpy as np
 
@@ -26,26 +26,26 @@ class TestUpdatedESDL(TestCase):
         sys.path.insert(1, root_folder)
 
         import examples.PoCTutorial.src.run_grow_tutorial
-        from examples.PoCTutorial.src.run_grow_tutorial import EndScenarioSizingStagedHighs
 
         base_folder = (
             Path(examples.PoCTutorial.src.run_grow_tutorial.__file__).resolve().parent.parent
         )
-        del root_folder
-        sys.path.pop(1)
+        model_folder = base_folder / "model"
+        input_folder = base_folder / "input"
 
-        solution = run_end_scenario_sizing(
-            EndScenarioSizingStagedHighs,
-            base_folder=base_folder,
+        problem = EndScenarioSizingStagedHIGHS(
             esdl_file_name="PoC Tutorial.esdl",
             esdl_parser=ESDLFileParser,
+            base_folder=base_folder,
+            model_folder=model_folder,
+            input_folder=input_folder,
         )
 
         # test KPIs in optimized ESDL
         esdl_path = os.path.normpath(
             os.path.join(base_folder, "model\\PoC Tutorial_GrowOptimized.esdl")
         )
-        optimized_energy_system = solution._ESDLMixin__energy_system_handler.load_file(esdl_path)
+        optimized_energy_system = problem._ESDLMixin__energy_system_handler.load_file(esdl_path)
 
         # High level checks of KPIs
         number_of_kpis_top_level_in_esdl = 8
