@@ -108,7 +108,7 @@ jobs:
           # name: updated_esdl_file
           name: test_demo
           # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-          path: Demo.txt
+          # path: Demo.txt
 
       - shell: bash
         run: |
