@@ -66,14 +66,14 @@ jobs:
           path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
 # # Dummy example
 # # -------------------------------------------------------------------------------------------
-#       - name: test_deom
-#         run: echo "Demo" > Demo.txt
+      - name: test_deom
+        run: echo "Demo" > Demo.txt
 
-#       - name: Archive test artifacts
-#         uses: actions/upload-artifact@v4 
-#         with:
-#           name: test_demo
-#           path: ./Demo.txt
+      - name: Archive test artifacts
+        uses: actions/upload-artifact@v4 
+        with:
+          name: test_demo
+          path: ./Demo.txt
 # # -------------------------------------------------------------------------------------------
       
       # - name: Archive test artifacts
@@ -106,14 +106,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: updated_esdl_file
-          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+          # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+          path: ./Demo.txt
       
       # Temp upload
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
           name: updated_esdl_file
-          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized_2.esdl
+          # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized_2.esdl
+          path: ./Demo_2.txt
 
       # - name: Check test
       #   run: tox -vv -etest_env2
