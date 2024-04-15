@@ -69,6 +69,10 @@ jobs:
       - name: test_deom
         run: echo "Demo" > Demo.txt
 
+      - shell: bash
+        run: |
+          expr 1 > Demo.txt
+
       - name: Archive test artifacts
         uses: actions/upload-artifact@v4 
         with:
@@ -109,15 +113,25 @@ jobs:
           name: test_demo
           # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
           path: ./Demo.txt
+
+      - shell: bash
+        run: |
+          expr 3 + 7 > Demo.txt
       
-      # Temp upload
-      - name: Upload results
-        uses: actions/upload-artifact@v4
-        with:
-          # name: updated_esdl_file
-          name: test_demo
-          # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized_2.esdl
-          path: ./Demo.txt
+      - name: Print the final result
+        shell: bash
+        run: |
+          value=`cat Demo.txt`
+          echo The result is $value
+      
+      # # Temp upload
+      # - name: Upload results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     # name: updated_esdl_file
+      #     name: test_demo
+      #     # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+      #     path: ./Demo.txt
 
       # - name: Check test
       #   run: tox -vv -etest_env2
