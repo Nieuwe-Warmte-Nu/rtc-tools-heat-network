@@ -112,7 +112,7 @@ jobs:
       - shell: bash
         run: |
           value=`cat examples/PoCTutorial/model/Demo.txt`
-          expr $value + 9 > Demo.txt
+          expr $value + 9 > examples/PoCTutorial/model/Demo.txt
       
       - name: Print the final result
         shell: bash
