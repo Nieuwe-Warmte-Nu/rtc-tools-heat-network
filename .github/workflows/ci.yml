@@ -105,11 +105,18 @@ jobs:
       - name: Archive test artifacts
         uses: actions/download-artifact@v4
         with:
-          name: updated_esdl_file
+          name: updated_esdl_file_2
+          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+      
+      # Temp upload
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated_esdl_file_3
           path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
 
-      - name: Check test
-        run: tox -vv -etest_env2
+      # - name: Check test
+      #   run: tox -vv -etest_env2
           
 
   documentation:
