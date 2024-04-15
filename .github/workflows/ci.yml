@@ -67,13 +67,13 @@ jobs:
 # # Dummy example
 # # -------------------------------------------------------------------------------------------
       - name: test_deom
-        run: echo 0 > ./Demo.txt
+        run: echo 0 > Demo.txt
 
       - name: Archive test artifacts
         uses: actions/upload-artifact@v4 
         with:
           name: test_demo
-          path: ./Demo.txt
+          path: Demo.txt
 # # -------------------------------------------------------------------------------------------
       
       # - name: Archive test artifacts
@@ -108,7 +108,7 @@ jobs:
           # name: updated_esdl_file
           name: test_demo
           # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-          path: ./Demo.txt
+          path: Demo.txt
 
       - shell: bash
         run: |
@@ -127,7 +127,7 @@ jobs:
       #     # name: updated_esdl_file
       #     name: test_demo
       #     # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-      #     path: ./Demo.txt
+      #     path: .Demo.txt
 
       # - name: Check test
       #   run: tox -vv -etest_env2
