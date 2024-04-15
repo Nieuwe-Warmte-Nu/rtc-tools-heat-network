@@ -75,15 +75,6 @@ jobs:
           name: test_demo
           path: Demo.txt
 # # -------------------------------------------------------------------------------------------
-      
-      # - name: Archive test artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: updated_esdl_file
-      #     path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-      # # Post processing testing    
-      # - name: Check test
-      #   run: tox -vv -etest_env2
 
   test_postprocessing:
     name: Test - postprocessing
@@ -105,32 +96,23 @@ jobs:
       - name: Archive test artifacts
         uses: actions/download-artifact@v4
         with:
-          # name: updated_esdl_file
-          name: test_demo
+          name: updated_esdl_file
+          # name: test_demo
           # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
           path: examples/PoCTutorial/model/  # try to specify location of file downloaded        
-      - shell: bash
-        run: |
-          value=`cat examples/PoCTutorial/model/Demo.txt`
-          expr $value + 9 > examples/PoCTutorial/model/Demo.txt
+      # - shell: bash
+      #   run: |
+      #     value=`cat examples/PoCTutorial/model/Demo.txt`
+      #     expr $value + 9 > examples/PoCTutorial/model/Demo.txt
       
-      - name: Print the final result
-        shell: bash
-        run: |
-          value=`cat examples/PoCTutorial/model/Demo.txt`
-          echo The result is $value
+      # - name: Print the final result
+      #   shell: bash
+      #   run: |
+      #     value=`cat examples/PoCTutorial/model/Demo.txt`
+      #     echo The result is $value
       
-      # # Temp upload
-      # - name: Upload results
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     # name: updated_esdl_file
-      #     name: test_demo
-      #     # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-      #     path: .Demo.txt
-
-      # - name: Check test
-      #   run: tox -vv -etest_env2
+      - name: Check test
+        run: tox -vv -etest_env2
           
 
   documentation:
