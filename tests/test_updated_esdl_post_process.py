@@ -42,9 +42,10 @@ class TestUpdatedESDL(TestCase):
         )
 
         # test KPIs in optimized ESDL
-        esdl_path = os.path.normpath(
-            os.path.join(base_folder, "model\\PoC Tutorial_GrowOptimized.esdl")
-        )
+        # esdl_path = os.path.normpath(
+        #     os.path.join(base_folder, "model\\PoC Tutorial_GrowOptimized.esdl")
+        # )
+        esdl_path = os.path.join(base_folder, "model", "PoC Tutorial_GrowOptimized.esdl")
         optimized_energy_system = problem._ESDLMixin__energy_system_handler.load_file(esdl_path)
 
         # High level checks of KPIs
