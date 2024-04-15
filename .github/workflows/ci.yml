@@ -80,6 +80,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: updated_esdl_file
+          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
       # Post processing testing    
       - name: Check test
         run: tox -vv -etest_env2
