@@ -108,16 +108,16 @@ jobs:
           # name: updated_esdl_file
           name: test_demo
           # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-          # path: Demo.txt        
+          path: examples/PoCTutorial/model/  # try to specify location of file downloaded        
       - shell: bash
         run: |
-          value=`cat Demo.txt`
+          value=`cat examples/PoCTutorial/model/Demo.txt`
           expr $value + 9 > Demo.txt
       
       - name: Print the final result
         shell: bash
         run: |
-          value=`cat Demo.txt`
+          value=`cat examples/PoCTutorial/model/Demo.txt`
           echo The result is $value
       
       # # Temp upload
