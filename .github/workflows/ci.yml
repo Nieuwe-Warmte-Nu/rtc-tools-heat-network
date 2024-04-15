@@ -59,11 +59,6 @@ jobs:
       - name: Check test
         run: tox -vv -etest_env_main
 
-      - name: Upload results
-        uses: actions/upload-artifact@v4
-        with:
-          name: updated_esdl_file
-          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
 # # Dummy example
 # # -------------------------------------------------------------------------------------------
 #       - name: test_demo
@@ -100,6 +95,7 @@ jobs:
         with:
           name: updated_esdl_file
           path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+          retention-days: 5
     
   test_post_processing:
     name: Test post-processing
