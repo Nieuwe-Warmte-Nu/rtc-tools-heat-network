@@ -41,7 +41,7 @@ jobs:
         run: python setup.py sdist bdist_wheel
 
   test_main:
-    name: Test - main
+    name: Test main
     runs-on: ubuntu-latest
     env:
       TOXENV: py38
@@ -66,18 +66,18 @@ jobs:
           path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
 # # Dummy example
 # # -------------------------------------------------------------------------------------------
-      - name: test_deom
-        run: echo 1 > Demo.txt
+#       - name: test_demo
+#         run: echo 1 > Demo.txt
 
-      - name: Archive test artifacts
-        uses: actions/upload-artifact@v4 
-        with:
-          name: test_demo
-          path: Demo.txt
+#       - name: Archive test artifacts
+#         uses: actions/upload-artifact@v4 
+#         with:
+#           name: test_demo
+#           path: Demo.txt
 # # -------------------------------------------------------------------------------------------
 
   test_postprocessing:
-    name: Test - postprocessing
+    name: Test post-processing
     needs: test_main
     runs-on: ubuntu-latest
     env:
@@ -114,7 +114,6 @@ jobs:
       - name: Check test
         run: tox -vv -etest_env2
           
-
   documentation:
     name: Generate documentation
     runs-on: ubuntu-latest

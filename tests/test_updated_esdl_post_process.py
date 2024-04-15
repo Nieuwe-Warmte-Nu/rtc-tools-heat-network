@@ -55,7 +55,7 @@ class TestUpdatedESDL(TestCase):
             "Energy production [Wh]",
             "Area_76a7: Asset cost breakdown [EUR]",
             "Area_9d0f: Asset cost breakdown [EUR]",
-            "Area_a58a: Asset cost breakdown [EUR]_",
+            "Area_a58a: Asset cost breakdown [EUR]",
         ]
         np.testing.assert_allclose(
             len(optimized_energy_system.instance[0].area.KPIs.kpi), number_of_kpis_top_level_in_esdl
