@@ -67,7 +67,7 @@ jobs:
 # # Dummy example
 # # -------------------------------------------------------------------------------------------
       - name: test_deom
-        run: echo 0 > Demo.txt
+        run: echo 1 > Demo.txt
 
       - name: Archive test artifacts
         uses: actions/upload-artifact@v4 
@@ -108,11 +108,11 @@ jobs:
           # name: updated_esdl_file
           name: test_demo
           # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
-          # path: Demo.txt
-
+          # path: Demo.txt        
       - shell: bash
         run: |
-          expr 3 + 7 > Demo.txt
+          value=`cat Demo.txt`
+          expr $value + 9 > Demo.txt
       
       - name: Print the final result
         shell: bash
