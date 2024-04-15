@@ -117,7 +117,7 @@ jobs:
           # name: updated_esdl_file
           name: test_demo
           # path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized_2.esdl
-          path: ./Demo_2.txt
+          path: ./Demo.txt
 
       # - name: Check test
       #   run: tox -vv -etest_env2
