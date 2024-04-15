@@ -57,7 +57,7 @@ jobs:
       
       # Preprocessing and solved network testing
       - name: Check test
-        run: tox -vv -etest_env1
+        run: tox -vv -etest_env_main
 
       - name: Upload results
         uses: actions/upload-artifact@v4
@@ -76,9 +76,34 @@ jobs:
 #           path: Demo.txt
 # # -------------------------------------------------------------------------------------------
 
-  test_postprocessing:
+  test_pre_processing:
+    name: Test pre-processing
+    runs-on: ubuntu-latest
+    env:
+      TOXENV: py38
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: deps
+        run: python -m pip install -U tox
+      
+      # Preprocessing and solved network testing
+      - name: Check test
+        run: tox -vv -etest_env_pre
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated_esdl_file
+          path: examples/PoCTutorial/model/PoC Tutorial_GrowOptimized.esdl
+    
+  test_post_processing:
     name: Test post-processing
-    needs: test_main
+    needs: test_pre_processing
     runs-on: ubuntu-latest
     env:
       TOXENV: py38
@@ -112,7 +137,7 @@ jobs:
       #     echo The result is $value
       
       - name: Check test
-        run: tox -vv -etest_env2
+        run: tox -vv -etest_env_post
           
   documentation:
     name: Generate documentation

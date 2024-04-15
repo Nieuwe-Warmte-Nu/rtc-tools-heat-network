@@ -5,8 +5,6 @@ from unittest import TestCase
 from mesido.esdl.esdl_parser import ESDLFileParser
 from mesido.workflows import run_end_scenario_sizing
 
-import numpy as np
-
 
 class TestUpdatedESDL(TestCase):
 
@@ -31,15 +29,12 @@ class TestUpdatedESDL(TestCase):
             Path(examples.PoCTutorial.src.run_grow_tutorial.__file__).resolve().parent.parent
         )
 
-        solution = run_end_scenario_sizing(
+        _ = run_end_scenario_sizing(
             EndScenarioSizingStagedHighs,
             base_folder=base_folder,
             esdl_file_name="PoC Tutorial.esdl",
             esdl_parser=ESDLFileParser,
         )
-        # This test only exist for flake test purposes: variable never used
-        results = solution.extract_results()
-        np.testing.assert_array_less(0.0, len(results.values()))
 
 
 if __name__ == "__main__":

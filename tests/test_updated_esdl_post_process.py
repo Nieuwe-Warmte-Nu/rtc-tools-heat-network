@@ -20,6 +20,12 @@ class TestUpdatedESDL(TestCase):
         - That the correct number of KPIs have been added
         - That the correct assets have been removed
         - Check that all the assets have a state=ENABLED
+
+        Add:
+        - pipe diam
+        - aggregation count of the asset -> check in mesido vs esdl
+        - units of the kips euro
+        - if the assets are connected
         """
 
         root_folder = str(Path(__file__).resolve().parent.parent)
