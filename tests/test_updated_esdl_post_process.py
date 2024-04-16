@@ -26,6 +26,8 @@ class TestUpdatedESDL(TestCase):
         - That the KPI values are represented in the correct units
         - That assets are connected and that the connections per ports were not changed in the
           updated ESDL
+        - That the size of the source has been made small. Not checking the exact
+        value - not the purpose of these tests
         - The correct number of polygon sub-areas exist
         """
 
@@ -159,6 +161,12 @@ class TestUpdatedESDL(TestCase):
                             ),
                             len(problem.esdl_assets[asset_name].in_ports),
                         )
+                if asset_name == "ResidualHeatSource_72d7":
+                    asset_id = optimized_energy_system.instance[0].area.asset[ii].id
+                    np.testing.assert_array_less(
+                        optimized_energy_system.instance[0].area.asset[ii].power,
+                        problem.esdl_assets[asset_id].attributes["power"],
+                    )
 
         # High level check on the polygon areas drawn
         number_of_areas_in_esdl = 3
