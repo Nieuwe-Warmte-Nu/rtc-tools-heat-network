@@ -20,6 +20,24 @@ def demand_matching_test(solution, results):
             len_times = len(solution.get_timeseries(f"{d}.target_cold_demand").values)
         target = solution.get_timeseries(f"{d}.target_cold_demand").values[0:len_times]
         np.testing.assert_allclose(target, results[f"{d}.Cold_demand"], atol=1.0e-3, rtol=1.0e-6)
+    for d in solution.energy_system_components.get("gas_demand", []):
+        if len(solution.times()) > 0:
+            len_times = len(solution.times())
+        else:
+            len_times = len(solution.get_timeseries(f"{d}.target_gas_demand").values)
+        target = solution.get_timeseries(f"{d}.target_gas_demand").values[0:len_times]
+        np.testing.assert_allclose(
+            target, results[f"{d}.Gas_demand_mass_flow"], atol=1.0e-3, rtol=1.0e-6
+        )
+    for d in solution.energy_system_components.get("electricity_demand", []):
+        if len(solution.times()) > 0:
+            len_times = len(solution.times())
+        else:
+            len_times = len(solution.get_timeseries(f"{d}.target_electricity_demand").values)
+        target = solution.get_timeseries(f"{d}.target_electricity_demand").values[0:len_times]
+        np.testing.assert_allclose(
+            target, results[f"{d}.Electricity_demand"], atol=1.0e-3, rtol=1.0e-6
+        )
 
 
 def _get_component_temperatures(solution, results, component, side=None):
@@ -79,7 +97,10 @@ def heat_to_discharge_test(solution, results):
     """
     test = TestCase()
     tol = 1.0e-2
-    for d in solution.energy_system_components.get("heat_demand", []):
+    for d in [
+        *solution.energy_system_components.get("heat_demand", []),
+        *solution.energy_system_components.get("airco", []),
+    ]:
         cp = solution.parameters(0)[f"{d}.cp"]
         rho = solution.parameters(0)[f"{d}.rho"]
         # return_id = solution.parameters(0)[f"{d}.T_return_id"]
@@ -96,7 +117,7 @@ def heat_to_discharge_test(solution, results):
         # dt = solution.parameters(0)[f"{d}.dT"]
         supply_t, return_t, dt = _get_component_temperatures(solution, results, d)
         np.testing.assert_allclose(
-            results[f"{d}.Heat_demand"],
+            results[f"{d}.Heat_flow"],
             results[f"{d}.HeatIn.Heat"] - results[f"{d}.HeatOut.Heat"],
             atol=tol,
         )
@@ -323,6 +344,9 @@ def energy_conservation_test(solution, results):
 
     for d in solution.energy_system_components.get("heat_demand", []):
         energy_sum -= results[f"{d}.Heat_demand"]
+
+    for d in solution.energy_system_components.get("airco", []):
+        energy_sum -= results[f"{d}.Heat_airco"]
 
     for d in solution.energy_system_components.get("cold_demand", []):
         energy_sum += results[f"{d}.Cold_demand"]

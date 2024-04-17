@@ -266,6 +266,16 @@ class EndScenarioSizing(
             self.state_vector(canonical, ensemble_member) * self.variable_nominal(canonical) * sign
         )
 
+    def solver_options(self):
+        options = super().solver_options()
+        if options["solver"] == "highs":
+            highs_options = options["highs"]
+            if self.__priority == 1:
+                highs_options["time_limit"] = 100
+            else:
+                highs_options["time_limit"] = 100000
+        return options
+
     def solver_success(self, solver_stats, log_solver_failure_as_error):
         success, log_level = super().solver_success(solver_stats, log_solver_failure_as_error)
 
@@ -309,6 +319,8 @@ class EndScenarioSizing(
                 self.solver_stats,
             )
         )
+        if priority == 1 and self.objective_value > 1e-6:
+            raise RuntimeError("The heating demand is not matched")
 
     def post(self):
         # In case the solver fails, we do not get in priority_completed(). We

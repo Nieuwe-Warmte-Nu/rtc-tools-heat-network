@@ -790,6 +790,13 @@ class AssetSizingMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
             lb = 0.0 if np.isinf(bounds[f"{asset_name}.Heat_demand"][1]) else ub
             _make_max_size_var(name=asset_name, lb=lb, ub=ub, nominal=ub / 2.0)
 
+        for asset_name in self.energy_system_components.get("airco", []):
+            ub = bounds[f"{asset_name}.Heat_airco"][1]
+            # Note that we only enforce the upper bound in state enabled if it was explicitly
+            # specified for the demand
+            lb = 0.0 if np.isinf(bounds[f"{asset_name}.Heat_airco"][1]) else ub
+            _make_max_size_var(name=asset_name, lb=lb, ub=ub, nominal=ub / 2.0)
+
         for asset_name in self.energy_system_components.get("cold_demand", []):
             ub = (
                 bounds[f"{asset_name}.Cold_demand"][1]
@@ -863,6 +870,11 @@ class AssetSizingMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
             lb = 0.0 if parameters[f"{asset_name}.state"] == 2 else ub
             _make_max_size_var(name=asset_name, lb=lb, ub=ub, nominal=ub / 2.0)
 
+        for asset_name in self.energy_system_components.get("compressor", []):
+            ub = bounds[f"{asset_name}.GasIn.Q"][1]
+            lb = 0.0 if parameters[f"{asset_name}.state"] == 2 else ub
+            _make_max_size_var(name=asset_name, lb=lb, ub=ub, nominal=ub / 2.0)
+
         for asset_name in self.energy_system_components.get("electrolyzer", []):
             ub = bounds[f"{asset_name}.ElectricityIn.Power"][1]
             lb = 0.0 if parameters[f"{asset_name}.state"] == 2 else ub
@@ -871,6 +883,11 @@ class AssetSizingMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
         for asset_name in self.energy_system_components.get("electricity_demand", []):
             v = bounds[f"{asset_name}.Electricity_demand"][1]
             ub = v if not np.isinf(v) else bounds[f"{asset_name}.ElectricityIn.Power"][1]
+            lb = 0.0 if parameters[f"{asset_name}.state"] == 2 else ub
+            _make_max_size_var(name=asset_name, lb=lb, ub=ub, nominal=ub / 2.0)
+
+        for asset_name in self.energy_system_components.get("transformer", []):
+            ub = bounds[f"{asset_name}.ElectricityIn.Power"][1]
             lb = 0.0 if parameters[f"{asset_name}.state"] == 2 else ub
             _make_max_size_var(name=asset_name, lb=lb, ub=ub, nominal=ub / 2.0)
 
