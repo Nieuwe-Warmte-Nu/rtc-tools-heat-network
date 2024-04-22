@@ -33,11 +33,15 @@ from .heat.heat_two_port import HeatTwoPort
 from .heat.low_temperature_ates import LowTemperatureATES
 from .heat.node import Node
 from .heat.pump import Pump
+from .multicommodity.airwater_heat_pump_elec import AirWaterHeatPumpElec
+from .multicommodity.electro_boiler import ElecBoiler
 from .multicommodity.electrolyzer import Electrolyzer
+from .multicommodity.gas_boiler import GasBoiler
 
 __all__ = [
     "Airco",
     "AirWaterHeatPump",
+    "AirWaterHeatPumpElec",
     "ATES",
     "HeatBuffer",
     "CheckValve",
@@ -45,12 +49,14 @@ __all__ = [
     "Compressor",
     "ControlValve",
     "HeatDemand",
+    "ElecBoiler",
     "ElectricityCable",
     "ElectricityDemand",
     "ElectricityNode",
     "ElectricitySource",
     "ElectricityStorage",
     "Electrolyzer",
+    "GasBoiler",
     "GasDemand",
     "GasNode",
     "GasPipe",
