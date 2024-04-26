@@ -3,8 +3,7 @@ from unittest import TestCase
 
 from mesido.esdl.esdl_parser import ESDLFileParser
 from mesido.esdl.profile_parser import ProfileReaderFromFile
-
-from rtctools.util import run_optimization_problem
+from mesido.util import run_esdl_mesido_optimization
 
 from utils_tests import demand_matching_test, energy_conservation_test, heat_to_discharge_test
 
@@ -17,7 +16,7 @@ class TestProducerMaxProfile(TestCase):
     (reducing the profile value at a few time steps).
 
     Checks:
-    - Standard checks demand matching, energy conservation and milp to discharge
+    - Standard checks demand matching, energy conservation and heat to discharge
     - check that heat_source <= scaled_profile * size_source.
 
     """
@@ -28,7 +27,7 @@ class TestProducerMaxProfile(TestCase):
 
         base_folder = Path(run_3a.__file__).resolve().parent.parent
 
-        solution = run_optimization_problem(
+        solution = run_esdl_mesido_optimization(
             HeatProblemProdProfile,
             base_folder=base_folder,
             esdl_file_name="3a.esdl",
@@ -50,6 +49,6 @@ class TestProducerMaxProfile(TestCase):
         ).values
         heat_producer_profile_full = heat_producer_profile_scaled * size_producer
 
-        # check that milp produced is smaller than the profile
+        # check that heat produced is smaller than the profile
         biggerthen = all(heat_producer_profile_full + tol >= heat_producer)
         self.assertTrue(biggerthen)

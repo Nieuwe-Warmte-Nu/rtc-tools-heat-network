@@ -3,29 +3,27 @@ from unittest import TestCase
 
 from mesido.esdl.esdl_parser import ESDLFileParser
 from mesido.esdl.profile_parser import ProfileReaderFromFile
+from mesido.util import run_esdl_mesido_optimization
 
 import numpy as np
-
-
-from rtctools.util import run_optimization_problem
 
 from utils_tests import demand_matching_test, energy_conservation_test, heat_to_discharge_test
 
 
 class TestMultiCommodityHeatPump(TestCase):
     """Test to verify that the optimisation problem can handle multicommodity problems, relating
-    electricity and milp"""
+    electricity and heat"""
 
     def test_heat_pump_elec_min_heat(self):
         """
         Verify that the minimisation of the heat_source used, and thus the optimization should
-        exploit the heatpump as much as possible, and minimum use of milp source at secondary
+        exploit the heatpump as much as possible, and minimum use of heat source at secondary
         side.
 
         Checks:
-        - Standard checks for demand matching, milp to discharge and energy conservation
+        - Standard checks for demand matching, heat to discharge and energy conservation
         - Checks for sufficient production
-        - Checks for milp pump energy conservation and COP modelling
+        - Checks for heat pump energy conservation and COP modelling
         - Checks for Power = I * V at the heatpump
 
         """
@@ -34,7 +32,7 @@ class TestMultiCommodityHeatPump(TestCase):
 
         base_folder = Path(run_hp_elec.__file__).resolve().parent.parent
 
-        solution = run_optimization_problem(
+        solution = run_esdl_mesido_optimization(
             HeatProblem2,
             base_folder=base_folder,
             esdl_file_name="heat_pump_elec.esdl",
@@ -88,14 +86,14 @@ class TestMultiCommodityHeatPump(TestCase):
         """
         Verify the minimization of the heat_source used. However, due to limitations in the
         electricity transport through the cables, the power to the heatpump is limited. This in
-        turn limits the milp produced by the heatpump which is then not sufficient for the total
-        heating demand, resulting in milp production by the secondary heatsource (milp produced by
+        turn limits the heat produced by the heatpump which is then not sufficient for the total
+        heating demand, resulting in heat production by the secondary heatsource (heat produced by
         this asset is not 0).
 
         Checks:
-        - Standard checks for demand matching, milp to discharge and energy conservation
+        - Standard checks for demand matching, heat to discharge and energy conservation
         - Checks for sufficient production
-        - Checks for milp pump energy conservation and COP modelling
+        - Checks for heat pump energy conservation and COP modelling
         - Checks for Power = I * V at the heatpump
 
         """
@@ -104,7 +102,7 @@ class TestMultiCommodityHeatPump(TestCase):
 
         base_folder = Path(run_hp_elec.__file__).resolve().parent.parent
 
-        solution = run_optimization_problem(
+        solution = run_esdl_mesido_optimization(
             HeatProblem,
             base_folder=base_folder,
             esdl_file_name="heat_pump_elec.esdl",
@@ -160,12 +158,12 @@ class TestMultiCommodityHeatPump(TestCase):
     def test_heat_pump_elec_min_elec(self):
         """
         Verify that minimisation of the electricity power used, and thus
-        exploiting the heatpump only for milp that cannot directly be covered by other sources.
+        exploiting the heatpump only for heat that cannot directly be covered by other sources.
 
         Checks:
-        - Standard checks for demand matching, milp to discharge and energy conservation
+        - Standard checks for demand matching, heat to discharge and energy conservation
         - Checks for sufficient production
-        - Checks for milp pump energy conservation and COP modelling
+        - Checks for heat pump energy conservation and COP modelling
         - Checks for Power = I * V at the heatpump
 
         """
@@ -176,7 +174,7 @@ class TestMultiCommodityHeatPump(TestCase):
 
         base_folder = Path(run_hp_elec.__file__).resolve().parent.parent
 
-        solution = run_optimization_problem(
+        solution = run_esdl_mesido_optimization(
             ElectricityProblem,
             base_folder=base_folder,
             esdl_file_name="heat_pump_elec.esdl",
