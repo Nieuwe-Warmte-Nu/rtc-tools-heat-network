@@ -2151,6 +2151,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         This function converts the Compressor object in esdl to a set of modifiers that can be
         used in a pycml object.
 
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with pressure specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -2193,6 +2216,30 @@ class AssetToHeatComponent(_AssetToComponentBase):
         """
         This function converts the GasHeater object in esdl to a set of modifiers that can be
         used in a pycml object.
+
+        Required ESDL fields:
+        ---------------------
+        - power
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with pressure/temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -2259,6 +2306,30 @@ class AssetToHeatComponent(_AssetToComponentBase):
         """
         This function converts the ElectricBoiler object in esdl to a set of modifiers that can be
         used in a pycml object.
+
+        Required ESDL fields:
+        ---------------------
+        - power
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with voltage/temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -2332,6 +2403,31 @@ class AssetToHeatComponent(_AssetToComponentBase):
         """
         This function converts the ElectricBoiler object in esdl to a set of modifiers that can be
         used in a pycml object.
+
+        Required ESDL fields:
+        ---------------------
+        - power
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with voltage/temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - COP
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
