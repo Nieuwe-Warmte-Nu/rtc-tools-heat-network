@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.abspath('../src'))
 # -- Project information -----------------------------------------------------
 
 project = 'Multi-Energy-Systems Integrated Design and Operations'
+html_title = 'MESIDO'
 author = 'Jim Rojer, Kobus van Rooyen and Femke Janssen'
 review = 'Kobus van Rooyen and Femke Janssen'
 
