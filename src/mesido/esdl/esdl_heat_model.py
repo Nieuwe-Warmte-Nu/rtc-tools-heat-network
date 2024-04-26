@@ -206,6 +206,31 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
 
+        Required ESDL fields:
+        ---------------------
+        - volume/capacity
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - max(Dis)ChargeRate
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -316,6 +341,30 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
 
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - power
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -350,6 +399,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         a pycml object. Most important:
 
         - Setting the amount of connections
+
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with (note only one inport and one outport):
+            - xsi:type
+            - id
+            - name
+            - connectedTo (allowed to have multiple connections)
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -410,6 +482,32 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the state (enabled, disabled, optional)
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
+
+        Required ESDL fields:
+        ---------------------
+        - Diameter/inner_diameter
+        - length
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with (note only one inport and one outport):
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - Material (for insulation)
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -525,6 +623,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
 
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with (note only one inport and one outport):
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -568,6 +689,31 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the state (enabled, disabled, optional)
         - Setting the relevant temperatures (also checked for making sense physically).
         - Setting the relevant cost figures.
+
+        Required ESDL fields:
+        ---------------------
+        - heatTransferCoefficient/power
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - 2 InPorts and 2 OutPorts with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - efficiency
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -699,6 +845,32 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
 
+        Required ESDL fields:
+        ---------------------
+        - power
+        - COP
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - 2 InPorts and 2 OutPorts with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - efficiency
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -777,6 +949,31 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the state (enabled, disabled, optional)
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
+
+        Required ESDL fields:
+        ---------------------
+        - power
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - aggregationCount
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -877,6 +1074,32 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
 
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - max(Dis)ChargeRate
+        - aquiferMidTemperature
+        - aggregationCount
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -969,6 +1192,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
 
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -1011,6 +1257,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         - Setting the relevant temperatures.
         - Setting the relevant cost figures.
 
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with temperature specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -1040,6 +1309,30 @@ class AssetToHeatComponent(_AssetToComponentBase):
         be used in a pycml object. Most important:
 
         - Setting the electrical power caps
+
+        Required ESDL fields:
+        ---------------------
+        - power
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with voltage specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -1081,6 +1374,30 @@ class AssetToHeatComponent(_AssetToComponentBase):
 
         - Setting the electrical power caps
 
+        Required ESDL fields:
+        ---------------------
+        - power
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with voltage specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -1119,6 +1436,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         used in a pycml object. Most important:
 
         - Setting the number of connections
+
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo (allowed to have multiple connections)
+            - carrier with voltage specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -1159,6 +1499,31 @@ class AssetToHeatComponent(_AssetToComponentBase):
 
         - Setting the length of the cable used for power loss computation.
         - setting the min and max current.
+
+        Required ESDL fields:
+        ---------------------
+        - length
+        - capacity
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with voltage specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -1201,6 +1566,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         used in a pycml object. Most important:
 
         - ...
+
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with pressure specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -1246,6 +1634,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
 
         - ...
 
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with pressure specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -1282,6 +1693,35 @@ class AssetToHeatComponent(_AssetToComponentBase):
         """
         This function converts the Electrolyzer object in esdl to a set of modifiers that can be
         used in a pycml object.
+
+        Required ESDL fields:
+        ---------------------
+        - power
+        - minLoad
+        - maxLoad
+        - effMinLoad
+        - effMaxLoad
+        - efficiency
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with voltage/pressure specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
@@ -1350,6 +1790,30 @@ class AssetToHeatComponent(_AssetToComponentBase):
         This function converts the GasTankStorage object in esdl to a set of modifiers that can be
         used in a pycml object.
 
+        Required ESDL fields:
+        ---------------------
+        - workingVolume
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with pressure specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
+
         Parameters
         ----------
         asset : The asset object with its properties.
@@ -1387,6 +1851,29 @@ class AssetToHeatComponent(_AssetToComponentBase):
         """
         This function converts the GasTankStorage object in esdl to a set of modifiers that can be
         used in a pycml object.
+
+        Required ESDL fields:
+        ---------------------
+        - id (this id must be unique)
+        - name (this name must be unique)
+        - xsi:type
+        - State
+        - InPort and OutPort with:
+            - xsi:type
+            - id
+            - name
+            - connectedTo
+            - carrier with pressure specified
+
+        Optional ESDL fields:
+        ---------------------
+        - technicalLifetime
+        - CostInformation: discountRate
+        - CostInformation: marginalCost
+        - CostInformation: installationCost
+        - CostInformation: investmentCost
+        - CostInformation: fixedOperationalCost
+        - CostInformation: variableOperationalCost
 
         Parameters
         ----------
