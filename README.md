@@ -9,11 +9,7 @@ The main supported method for defining your Energy system is ESDL (Energy System
 With ESDL you can define assets like demands, sources, pipes, etc. and fill in their attributes. The ESDLMixin class
 will parse the ESDL file and utilize the attributes to build up the model representation.
 
-This optimization package was originally developed for operational optimization and hosts two 
-optimization approaches 1) A MILP approach 
-and 2) Nonlinear Problem (NLP) approach. These two approaches were developed to run sequentially for 
-operational optimization. the MILP would fix the integer decision for the NLP problem, such that only the continuous variables need to be solved. The NLP
-problem would then find the optimized solution with the steady-state non-linear physics included. The existing outdated (still to be updated / update in progress) documentation can be found on: http://warmingup.pages.ci.tno.nl/rtc-tools-heat-network/
+The documentation on the mathematical modelling and workflow application can be found on: `readthedocs <https://mesido.readthedocs.io/en/latest/>`.
 
 Installation
 ============
