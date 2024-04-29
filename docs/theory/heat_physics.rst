@@ -17,7 +17,8 @@ General Physics
 ---------------
 
 The DHS is modelled as a closed loop system and thus at every time-step and for every asset, mass balance should hold.
-The system is modeled with constant temperature and thus constant density and specific heat. The mass balance is provided as a volumetric flow balance in :eq:`eq:flow_balance`.
+The system is modeled with constant temperature and thus constant density and specific heat.
+The mass balance is provided as a volumetric flow balance in :eq:`eq:flow_balance`.
 
 .. math::
     :label: eq:flow_balance
@@ -80,11 +81,11 @@ where
 
     \delta^a_{discon} \in \{0, 1\} \;\; \forall a \in A_{pipes}
 
-Here :math:`T_{sup}, T_{ret}`, and :math:`T_{amb}` are the supply, return and ambient temperatures.
-:math:`A_{pipes}` is the set of pipes with :math:`L^a` the length of pipe :math:`a`.
-:math:`\delta^a_{discon}` is a binary variable used to model if pipe :math:`a` is in use or not.
+:math:`T_{sup}, T_{ret}`, and :math:`T_{amb}` represent the supply, return and ambient temperatures.
+:math:`A_{pipes}` define the set of pipes with :math:`L^a` being the length of pipe :math:`a`.
+:math:`\delta^a_{discon}` is a boolean variable to model if pipe :math:`a` is in use for a specific time-step.
 :math:`d^a_{inner}` and :math:`d^a_{outer}` are the inner and outer diameters of pipe :math:`a` and :math:`k_{subsoil}` is a constant used to model the resistance of the subsoil.
-:math:`\delta^a_{discon}` is modelled using:
+:math:`\delta^a_{discon}` is modelled by:
 
 .. math::
 
@@ -94,15 +95,15 @@ Here :math:`T_{sup}, T_{ret}`, and :math:`T_{amb}` are the supply, return and am
 
     \dot{Q}_{i} - \delta_{discon}M \leq 0 \;\; \forall i \in I^a \;\; \forall a \in A_{pipes}.
 
-Here :math:`M` is a sufficiently large constant used in a method called the big-M method \cite{vielma2015mixed}.
+Here :math:`M` is a sufficiently large constant used in a method called the big-M method :cite:`vielma2015mixed`.
 
-The thermal power loss is approximated as a constant as the network supply and return temperature are assumed constant.
-The source side supply temperature and demand side return temperature are selected to guarantee an overestimation of the thermal power loss, since in reality the temperature w.r.t. the ambient decreases as the temperature drops with the thermal power loss.
+The thermal power loss is assumed to be constant as the pipe temperature is assumed to be constant.
+The outgoing temperatures at the assets (e.g. supply at the source and return at the demand) are used to ensure an overestimation of the thermal loss. In reality the temperature w.r.t. the ambient decreases as the temperature drops over the pipe with the energy loss.
 
-Typical temperature drops in the primary network are up to 3 degrees, this implies that for medium temperature networks, operating at 75 degrees and with an ambient of 15 degrees, the error for the heat loss estimation is less than :math:`\frac{3}{75-15} = 5\%`.
-During periods of larger heating demand, typically in the winter, the relative error in the heat loss estimation will be smaller and thus it will not result in unnecessary large pipe diameters and heat power production.
+Typical temperature drops in the primary network are up to 3 degrees, this implies that for medium temperature networks, operating at 75 degrees and with an ambient of 15 degrees, the error for the heat loss estimation is less than :math:`\frac{3}{75-15} \approx 5\%`.
 
-Inequality constraints correlate the volumetric flow :math:`\dot{V}` and the heat flow :math:`\dot{Q}` through pipes as a compensation of heat losses is required:
+Inequality constraints are used to relate the volumetric flow :math:`\dot{V}` and the heat flow :math:`\dot{Q}` through pipes as a compensation of heat losses is required.
+Please note that the :math:`\dot{V}` and the heat flow :math:`\dot{Q}` will be related by equality constraints for the outgoing flow at the assets, ensuring that the thermal power propagates correctly through the network.
 
 .. math::
     :label: eq:pipe_heat2discharge1
@@ -120,7 +121,8 @@ Inequality constraints correlate the volumetric flow :math:`\dot{V}` and the hea
 
     \delta^a_{dir} \in \{ 0, 1 \} \;\; \forall a \in A_{pipes}.
 
-Here :math:`T^a` is the temperature inside pipe :math:`a`, which is assumed to be either :math:`T_{sup}` or :math:`T_{ret}`, :math:`c_p` and :math:`\rho` are the specific heat capacity and density of water and :math:`M` is a sufficiently large constant number. :math:`\delta^a_{dir}` denotes the flow direction is used to model the flow direction through the pipe, where we assume that a value of :math:`1` indicates a positive flow (from in-port to out-port). This is modelled using:
+Here :math:`T^a` is the temperature inside pipe :math:`a`, :math:`c_p` and :math:`\rho` are the specific heat capacity and density of water and :math:`M` is a sufficiently large constant number.
+:math:`\delta^a_{dir}` is the variable for  flow direction in the pipe, where a value of :math:`1` indicates a positive flow (from in-port to out-port). This is modelled using:
 
 .. math::
     :label: eq:flowdir1

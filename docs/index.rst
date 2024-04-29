@@ -6,7 +6,7 @@ This is the documentation for MESIDO.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Mesido
 
    theory/index

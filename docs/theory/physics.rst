@@ -13,7 +13,8 @@ Mesido allows for the integral optimization of energy systems having:
 * A gaseous commodity where pipes transport the gas.
 * Electricity commodity where cables transport the energy
 
-There are documentation pages for the three respective commodities and the physics that are modelled for each. This page will focus on the assets, physics and other functionality that generalizes over the commodities.
+There are documentation pages for the three respective commodities and the physics that are modelled for each.
+This page will focus on the assets, physics and other functionality that involves multiple commodities.
 
 Electrolyzer
 ------------
