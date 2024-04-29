@@ -134,15 +134,17 @@ Here :math:`T^a` is the temperature inside pipe :math:`a`, :math:`c_p` and :math
 
     \dot{Q}_{i} + (1 - \delta_{dir})M \geq 0 \;\; \forall i \in I^{a} \;\; \forall a \in A_{pipes}.
 
-Within a hydraulically coupled system the volume is assumed to be preserved as result of the mass balance and constant temperature, therefore :eq:`eq:flow_balance` is applied to pipes.
-Pipes give resistance opposing the flow in the flow of head loss, :math:`dH`. This head loss must be compensated by pumps which are assumed to be located at sources and storage assets:
+The head loss, :math:`dH` must be compensated by pumps which are assumed to be located at sources and storage assets:
 
 .. math::
     :label: eq:pipe_head
 
     H^a_{in} - dH = H^a_{out} \;\; \forall a \in A_{pipes}.
 
-In reality the steady-state head losses are closely modelled with a quadratic relation w.r.t. :math:`\dot{V}`. To approximate the quadratic behaviour a set of linear inequalities is used, see :numref:`inequalitydH`. The general form of the inequalities is given below in :eq:`eq:pipe_head_loss1`-:eq:`eq:pipe_hp2` These inequalities force the head loss to be greater or equal to the approximated quadratic curve. Although this will not enforce a physically feasible answer the optimizer will in practice drag the solution to an equality constraint as the objective function will minimize cost that reduces with lower pressure drop.
+Steady-state head losses can be closely modelled with a quadratic relation w.r.t. :math:`\dot{V}`.
+A set of linear inequalities is used, see :numref:`inequalitydH`, to approximate the quadratic curve.
+The general form of the inequalities is given below in :eq:`eq:pipe_head_loss1`-:eq:`eq:pipe_hp2` These inequalities force the head loss to be greater or equal to the approximated quadratic curve.
+Although the constraints by themselves will not guarantee a physically feasible answer, the optimization will in drag the solution to an equality constraint as the objective function will minimize cost which reduces with lower pressure drop.
 
 .. _inequalitydH:
 
@@ -152,9 +154,12 @@ In reality the steady-state head losses are closely modelled with a quadratic re
 
     Schematic visualization of how the linear constraints are fitted to the head loss curve.
 
-This method with linear inequalities is only valid when every unique route the flow can take in the network has a control valve to compensate non-physical head loss induced by the optimizer. This was a valid assumption for the use-case in this research, alternatively a (piece-wise) linear equality constraint between min and max flow-rate can be applied for cases where this assumption is invalid.
+This method with linear inequalities is only valid when every unique route the flow can take in the network has a control valve to compensate non-physical head loss induced by the optimizer.
+Alternatively a (piece-wise) linear equality constraint between min and max flow-rate can be configured for cases where this assumption is invalid.
 
-Note that the big M method is used in combination with the flow direction integers to allow the inequality constraints to work both for positive and negative flow and to allow for disabling the constraints when no flow is going through the pipe.
+KOBUS CAN YOU WRITE OUT THE EQUATIONS FOR THIS.
+
+Note that the big M method is used with the flow direction and disconnected integers to allow for modelling of bi-directional flow and the ability to disconnect pipes.
 
 .. math::
     :label: eq:pipe_head_loss1
@@ -187,9 +192,9 @@ Here :math:`(c_j, d_j)` are the coefficients and constants of the linear equatio
 Node
 ~~~~
 
-A node needs to conserve the flow with :eq:`eq:flow_balance` and the energy with :eq:`eq:general_energy_balance` where no energy losses, production and consumption occurs.
+The node conserves the flow with :eq:`eq:flow_balance` and the energy with :eq:`eq:general_energy_balance`.
 
-To make the solution hydraulically feasible it is enforced that all heads connected to the node have to be equal:
+All heads connected to the node must be equal to ensure hydraulically feasible solution:
 
 .. math::
     :label: eq:node_head
@@ -204,45 +209,43 @@ Asset Physics
 Source
 ~~~~~~
 
-The main function of a source is to add thermal power to the network that can be consumed, or is lost to the ambient.
-The energy balance of the addition of thermal power is ensured by :eq:`eq:general_energy_balance` with :math:`\dot{Q}^a_{consumed}` is set to the (negative) value of the produced amount of heat.
+The source adds thermal power to the network.
+The energy balance is given by :eq:`eq:general_energy_balance` where :math:`\dot{Q}^a_{consumed}` is equal to the (negative) value of the produced heat.
 
-The addition of energy is executed by increasing the temperature of the incoming cold water of the return network to the outgoing supply temperature.
-Therefore, the volumetric flow-rate is linked to the outgoing thermal power with the outgoing supply temperature using:
-%
+The addition of energy is executed by increasing the temperature of the incoming water (the return network) to the outgoing supply temperature.
+Therefore, the volumetric flow-rate is linked to the outgoing thermal power with the outgoing supply temperature with equality constraints:
+
 
 .. math::
     :label: eq:source_heat2discharge
 
     \sum_{i \in I^a_{out}} \dot{Q}^a_i = c_p \rho \dot{V}^a T_{sup} \;\; \forall a \in A_{prod},
 
-with :math:`A_{prod}` the set of all producers. Note that we assume that every producer has only a single in- and a single out-port.
+where :math:`A_{prod}` is the set of all producers.
 
-This equality constraint ensures that the thermal power cannot be larger than what physically can be transported by the flow. Applying only equality constraints on the outgoing heat of assets, except from pipes, allows to consider temperature regimes, their corresponding heat losses and volumetric flows without modelling the temperature.
-No constraints are set on the returning flow to the producer as this is already implied by heat flow constraints on pipes. The optimizer will drag the solution to the minimum amount of thermal power to produce for minimizing cost.
+The equality constraints ensure that the thermal power equals what can be physically transported by the flow.
+No constraints are set on the returning flow at the in port, as this is already implied by the constraints on pipes.
 
-The errors as a result of not modelling the temperature, e.g. linearizing the problem,  can be observed in various parts of the costs.
-The heat losses will be overestimated resulting in a conservative estimation w.r.t. the cost of the thermal energy produced.
-Furthermore, the overestimation in thermal power will result in an overestimation of the flow and thus of the transportation and pipe sizing cost.
+The modelling errors from not modelling temperature are present in various parts of the costs.
+The heat losses will be overestimated giving an overestimate w.r.t. the cost of the thermal energy produced.
+The overestimation of the thermal power required will induce an overestimation of the flow and thereby of the transportation and pipe sizing.
 
-It is assumed that the source acts within the hydraulically coupled network and does not add or subtract mass, which under the assumption of constant temperature ensures the flow balance :eq:`eq:flow_balance`.
+The source is assumed to act within one hydraulically coupled network, :eq:`eq:flow_balance`.
 
-It is assumed that every source has a pump to reach its desired flow-rate and head:
+A source is modelled with a pump to reach its desired flow-rate and head:
 
 .. math::
     :label: eq:source_pump_dh
 
     H^a_{in} + dH_{pump} = H^a_{out} \;\; \forall a \in A_{prod}.
 
-Since we assume that a producer has only a single in- and a single out-port, :math:`H^a_{in}` and :math:`H^a_{out}` are the head values of the specific pipes connected to these ports, and :math:`dH_{pump}` is the compensation provided by the pump of the asset.
-
 Demand
 ~~~~~~
 
-Contrary to a source, a demand's function is to extract thermal power from the network, defined by :eq:`eq:general_energy_balance` where :math:`\dot{Q}^a_{consumed}` is the consumed thermal energy by the demand.
+A demand extracts thermal power from the network, defined by :eq:`eq:general_energy_balance` where :math:`\dot{Q}^a_{consumed}` is the consumed thermal power.
 
-Likewise to a source, no additional constraints are required to link the heat flow and volumetric flow at the in-going supply side of the demand as this is already implied by all other network constraints.
-An equality constraint is used to link outgoing thermal power and volumetric flow with the return temperature of the network:
+Similar to the source, no constraints are required at the in-going supply side of the demand, and
+an equality constraint relates outgoing thermal power with volumetric flow:
 
 .. math::
     :label: eq:consumer_heat2discharge
@@ -251,12 +254,11 @@ An equality constraint is used to link outgoing thermal power and volumetric flo
 
 where :math:`A_{demand}` is the set of demand assets.
 
-Important to note, is that this combination of constraints for the producers and demands, results in a smaller achieved temperature difference at the demand than the difference between the given temperatures for the supply and return side. And a larger achieved temperature difference at the producer.
-The choice on where a temperature is fixed results in different errors as already explained at the producers.
+The combination of constraints ate the producers and demands, results in a smaller achieved temperature difference at the demand than the difference between the given temperatures for the supply and return side, and a larger achieved temperature difference at the producer.
 
-Again it is assumed that a demand also acts within the hydraulically coupled system under the same assumptions, see :eq:`eq:flow_balance`.
+Similar as for the source the demand acts within one hydraulically coupled system under the same assumptions, see :eq:`eq:flow_balance`.
 
-Every demand is assumed to have a control valve to regulate its flow. Typically, a minimum head loss should be maintained:
+Every demand is modelled with a control valve to regulate its flow. In reality a minimum head loss is be maintained is ofter maintained:
 
 .. math::
     :label: eq:demand_head
@@ -266,28 +268,27 @@ Every demand is assumed to have a control valve to regulate its flow. Typically,
 Storage
 ~~~~~~~
 
-Storage assets in the network can have the function to add time flexibility with the production and consumption of energy in the network. For shorter periods this capability is provided by tanks, storage over seasons is done with \gls{ht-ates}, \cite{drijver2019state}. Both are modelled with equivalent logic and their own specific parameters.
+Storage assets add time flexibility with the production and consumption of thermal power. For shorter intra-day periods this capability is provided by tanks, alternatively storage over seasons is done with underground thermal energy storage like HT-ATES, :cite:`drijver2019state`.
 
-The amount of thermal power extracted from or provided to the network subtracted by the losses in the storage is defined as :math:`\dot{Q}^{a}_{consumed}` by:
+:math:`\dot{Q}^{a}_{consumed}` can be defined by the thermal power substracted from or added to the network, where the internal losses of the storage are subtracted:
 
 .. math::
     :label: eq:change_stored_heat
 
-    \dot{Q}^{a}_{consumed} =  \sum_{i \in I^a_{in}} \dot{Q}^{a}_{i} -  \sum_{i \in I^a_{out}} \dot{Q}^{a}_{i} - \dot{Q}^{a}_{loss} \;\; \forall a \in A_{storage},
+    \dot{Q}^{a}_{consumed} =  \sum_{i \in I^a_{in}} \dot{Q}^{a}_{i} -  \sum_{i \in I^a_{out}} \dot{Q}^{a}_{i} - \dot{Q}^{a}_{loss} \;\; \forall a \in A_{storage}.
 
-where :math:`\dot{Q}^{a}_{in}`, :math:`\dot{Q}^{a}_{out}` and :math:`\dot{Q}^{a}_{loss}` define the heat entering, leaving and heat loss of the storage asset respectively.
 The consumed heat of the storage assets is equated to the change change in stored heat, :math:`\dot{Q}^{a}_{stored}`:
-
 
 .. math::
     :label: eq:stored_heat
 
     \dot{Q}^{a}_{consumed} = \dot{Q}^{a}_{stored} \;\; \forall a \in A_{storage}
 
-
-The storage needs an equality constraints for thermal power to volumetric flow on the outgoing flow to the supply network when it is discharging and acting like a source and on the outgoing flow to the return network when it is charging and acting like a demand.
-This is achieved by using the big M method to activate the constraints during charging, :eq:`eq:storage_heat2discharge1` and :eq:`eq:storage_heat2discharge2`, and during discharging, :eq:`eq:storage_heat2discharge3` and :eq:`eq:storage_heat2discharge4`.
-For this purpose the flow direction integer of the connecting pipe is used, such that :math:`\delta_{dir}` is 1 for charging.
+Like the source and demand assets the storage needs equality constraints relating the outgoing flow to the thermal power.
+Unlike the demand and source the outgoing flow can be either on the in or out port depending whether the storage is charging or discharging.
+The default convention is that charging indicates positive flow, therefore :math:`\delta_{dir}` can be used as an integer for charging/discharging.
+Equations :eq:`eq:storage_heat2discharge1` and :eq:`eq:storage_heat2discharge2` are active during charging, and during discharging,
+:eq:`eq:storage_heat2discharge3` and :eq:`eq:storage_heat2discharge4` are activated by the big M method.
 
 .. math::
     :label: eq:storage_heat2discharge1
@@ -309,7 +310,10 @@ For this purpose the flow direction integer of the connecting pipe is used, such
 
      \sum_{i \in I^a_{out}} \dot{Q}^{a}_{i} - c_p \rho \dot{V}^{a} T_{ret} - (1-\delta^{a}_{dir}) M \leq 0 \;\; \forall a \in A_{storage}
 
-For simplicity it is assumed that the loss scales linearly with the amount of stored heat:
+Tank
+^^^^
+
+Heat loss in a tank is modelled as linear with the stored heat:
 
 .. math::
     :label: eq:storage_loss
@@ -318,29 +322,38 @@ For simplicity it is assumed that the loss scales linearly with the amount of st
 
 where :math:`Q^{a}_{stored}` is the heat stored in the storage asset and :math:`\beta` is the efficiency factor.
 
-For tanks it is assumed that they are cylindrical and radiate heat over their their surface area. This is done as this surface area increases linearly with the stored heat, see :eq:`eq:etatank`. A radiation coefficient, :math:`c_r`, of 1 :math:`W/m^2` is used as an approximation.
+The efficiency factor is approximated assuming that tanks are cylindrical and lose heat over their surface area, see :eq:`eq:etatank`.
+For cylindrical tanks their surface area approximately increases linearly with the stored heat.
+A radiation coefficient, :math:`c_r`, of 1 :math:`W/m^2` is used as an approximation.
 
 .. math::
     :label: eq:etatank
 
     \beta_{tank} = \frac{2c_r}{r\rho c_p}
 
-For an \gls{ht-ates} a first approximation for heat loss is based on an efficiency that is reached in a period of time. In this research a value of 70\% over 100 days is used.
+HT-ATES
+^^^^^^^
+
+Two HT-ATES modelling methods are available. The first approximation for heat loss is based on an efficiency that is reached in a period of time. In this research a value of 70\% over 100 days is used.
 
 .. math::
 
     \beta_{HTATES} = \eta^{\frac{1}{time}}
 
+The second method: COMING SOON...
 
-Similarly as for the other assets the storage assets are assumed to act within the hydraulically coupled system, nonetheless the volumetric flow balance requires additional equations.
-The storage is modelled as an asset with two variable volumes, one for the cold and one for the warm water. The total in- and outflow of the storage will be equal, however, the volumes inside the storage might vary under the condition that the sum remains constant and is equal to the total volume of storage:%, modelled using :eq:`eq:storage_volume_constant`.
+
+Similarly as for the other assets the storage assets are assumed to act within the hydraulically coupled system,
+nonetheless the volumetric flow balance requires additional equations.
+The storage is modelled as an asset with a hot and cold volume.
+The total volume will be conserved by the in- and outflow at the storage.
 
 .. math::
     :label: eq:storage_volume_constant
 
     \dot{V}^{a}_{warm}-\dot{V}^{a}_{cold}=0 \;\; \forall a \in A_{storage},
 
-where :math:`\dot{V}^{a}_{warm}` and :math:`\dot{V}^{a}_{cold}`, respectively denote the change in volume of the warm and cold water.
+where :math:`\dot{V}^{a}_{warm}` and :math:`\dot{V}^{a}_{cold}`, respectively denote the change in the hot and cold volume.
 The warm volume will increase and decrease with the volumetric flow passing the storage:
 
 .. math::
@@ -348,13 +361,12 @@ The warm volume will increase and decrease with the volumetric flow passing the 
 
     \dot{V}^{a}-\dot{V}^{a}_{warm}=0 \;\; \forall a \in A_{storage}.
 
-The storage assets are assumed to have both a pump and a valve to regulate their flow rate:
+The storage assets are assumed to have both a pump and a valve, as they fulfill both the source and demand role:
 
 .. math::
     :label: eq:source_pump
 
     H^{a}_{in} + dH^{a}_{pump} - dH^{a}_{valve} = H^{a}_{out} \;\; \forall a \in A_{storage},
 
-where :math:`dH^{a}_{pump}` is a compensation of the pressure increase by the pump of the storage asset and :math:`dH^{a}_{valve}` is a compensation of the pressure decrease by the control valve of the storage asset.
 
 

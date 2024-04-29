@@ -16,27 +16,30 @@ Mesido allows for the integral optimization of energy systems having:
 There are documentation pages for the three respective commodities and the physics that are modelled for each.
 This page will focus on the assets, physics and other functionality that involves multiple commodities.
 
+Multi-Commodity Asset Physics
+-----------------------------
+
 Electrolyzer
-------------
+~~~~~~~~~~~~
 
 
 Water-water Heat Pump Electrical
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
 Air-water Heat Pump Electrical
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Electrical Boiler
------------------
+~~~~~~~~~~~~~~~~~
 
 
 Gas Boiler
-----------
+~~~~~~~~~~
 
 
 Setpoint Constraints
---------------------
+~~~~~~~~~~~~~~~~~~~~
 

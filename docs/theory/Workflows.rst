@@ -28,7 +28,7 @@ This workflow comes in a few variants that give the user the possibility to trad
 * EndScenarioSizingHeadLossDiscounted
 
 EndScenarioSizing
------------------
+~~~~~~~~~~~~~~~~~
 
 The EndScenarioSizing workflow in short:
 
@@ -72,7 +72,7 @@ In its default configuration the workflow has the following main assumptions:
 For the assumptions on the physics and cost modelling the reader is referred to the respective modelling pages.
 
 EndScenarioSizingNoHeatLosses
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The EndScenarioSizingNoHeatLosses workflow provides all the same functionality as the standard EndScenarioSizing, except that heat losses in the network are not modelled.
 This means that the required thermal energy of the system is underestimated and hence mainly the OPEX will be underestimated.
@@ -84,7 +84,7 @@ EndScenarioSizingNoHeatLosses workflow should not be used as a replacement of th
 
 
 EndScenarioSizingDiscounted
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The EndScenarioSizingDiscounted provides everything the EndScenarioSizing workflow provides, but also:
 
@@ -93,7 +93,7 @@ The EndScenarioSizingDiscounted provides everything the EndScenarioSizing workfl
 
 
 EndScenarioSizingHeadLoss
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The EndScenarioSizingHeadLoss provides everything the EndScenarioSizing workflow provides, but also:
 
