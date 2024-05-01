@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from mesido.esdl.esdl_parser import ESDLFileParser
 from mesido.workflows import run_end_scenario_sizing
+# from mesido.workflows.io.write_output import ScenarioOutput
 
 
 class TestUpdatedESDL(TestCase):
@@ -11,12 +12,10 @@ class TestUpdatedESDL(TestCase):
     def test_updated_esdl(self):
         """
         Check that the updated ESDL resulting from the optmizer, is correct by using the PoCTutorial
-        and the Grow_workflow
+        and the Grow_workflow. This is done for the actual esdl file and the esdl string created by
+        MESIDO. For this purpose a network is optimized in this function and the optimized esdl file
+        and esdl string is saved.
 
-        Checks:
-        - That the correct number of KPIs have been added
-        - That the correct assets have been removed
-        - Check that all the assets have a state=ENABLED
         """
 
         root_folder = str(Path(__file__).resolve().parent.parent)
@@ -29,12 +28,20 @@ class TestUpdatedESDL(TestCase):
             Path(examples.PoCTutorial.src.run_grow_tutorial.__file__).resolve().parent.parent
         )
 
-        _ = run_end_scenario_sizing(
+        problem = run_end_scenario_sizing(
             EndScenarioSizingStagedHighs,
             base_folder=base_folder,
             esdl_file_name="PoC Tutorial.esdl",
             esdl_parser=ESDLFileParser,
         )
+
+        optimized_esdl_string = problem.optimized_esdl_string
+
+        file = open(
+            Path.joinpath(base_folder, "model", "PoC Tutorial_GrowOptimized_esdl_string.esdl"), "w"
+        )
+        file.write(optimized_esdl_string)
+        file.close()
 
 
 if __name__ == "__main__":
