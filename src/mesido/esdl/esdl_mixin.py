@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import esdl.esdl_handler
-from esdl.resources.xmlresource import XMLResource
 
 from mesido.component_type_mixin import (
     ModelicaComponentTypeMixin,
@@ -364,7 +363,7 @@ class ESDLMixin(
         An XML string representing the energy system
         """
 
-        uri = esdl.esdl_handler.StringURI('to_string.esdl')
+        uri = esdl.esdl_handler.StringURI("to_string.esdl")
         energy_system.eResource.save(uri)
         return uri.getvalue()
 

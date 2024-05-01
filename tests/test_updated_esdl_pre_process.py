@@ -4,7 +4,6 @@ from unittest import TestCase
 
 from mesido.esdl.esdl_parser import ESDLFileParser
 from mesido.workflows import run_end_scenario_sizing
-# from mesido.workflows.io.write_output import ScenarioOutput
 
 
 class TestUpdatedESDL(TestCase):
