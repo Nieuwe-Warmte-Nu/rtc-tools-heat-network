@@ -34,8 +34,8 @@ class TestUpdatedESDL(TestCase):
             esdl_parser=ESDLFileParser,
         )
 
+        # Save optimized esdl string
         optimized_esdl_string = problem.optimized_esdl_string
-
         file = open(
             Path.joinpath(base_folder, "model", "PoC Tutorial_GrowOptimized_esdl_string.esdl"), "w"
         )
