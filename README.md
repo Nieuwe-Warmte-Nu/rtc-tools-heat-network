@@ -2,7 +2,7 @@
 
 mesido is an optimization application for optimal planning, design and 
 operation of Energy Systems with the current main focus on District Heating Systems (DHS). The current application focuses on a Mixed Integer Linear Problem (MILP) approach, with multiple linearization strategies to conservatively approximate the steady-state physics and financial models.
-All physics are combined in the HeatMixin class. When inherited this class can be combined with objective functions (that typically incorporate the financial aspects) and interface methods to create an
+All physics, placement, sizing and financial models are combined in the TechnoEconomicMixin class. When inherited this class can be combined with objective functions (that typically incorporate the financial aspects) and interface methods to create an
 optimization workflow (see also running an example).
 
 The main supported method for defining your Energy system is ESDL (Energy System Description Language), which is a modelling language for energy systems. See also:https://github.com/EnergyTransition/ESDL.
@@ -53,7 +53,7 @@ inherits from (Note only the *classes are defined in mesido the others come from
 - *ESDLMixin: This class does the parsing and setting up of a model based on an ESDL file.
 - GoalProgrammingMixin: This class allows you to add Goals (objective functions) with different priorities.
 - LinearizedOrderGoalProgrammingMixin: This class allows you to add higher order goals (e.g. order=2) for MILP problems.
-- *HeatMixin: This class adds all the heat network physics for MILP problems. 
+- *TechnoEconomicMixin: This class adds all the network physics and sizing variables for MILP problems. 
 
 Within the PipeDiameterSizingProblem class you can see that the path_goals() function is overwritten and that
 a path_goal with priority one is added to meet the heat demands. The definition path_goal is used
