@@ -20,9 +20,11 @@ class TestUpdatedESDL(TestCase):
         """
         Check that the updated ESDL resulting from the optmizer, is correct by using the PoCTutorial
         and the Grow_workflow. This is done for the actual esdl file and the esdl string created by
-        MESIDO.
+        MESIDO. Both these resulting optimized energy systems should be identical and it is only
+        the MESIDO esdl saving method that differs.
 
         Checks:
+        - That the esdl saving method (direct ESDL file and ESDL string)
         - That the correct number of KPIs have been added
         - That the correct assets have been removed
         - That all the assets have a state=ENABLED

@@ -10,10 +10,10 @@ class TestUpdatedESDL(TestCase):
 
     def test_updated_esdl(self):
         """
-        Check that the updated ESDL resulting from the optmizer, is correct by using the PoCTutorial
-        and the Grow_workflow. This is done for the actual esdl file and the esdl string created by
-        MESIDO. For this purpose a network is optimized in this function and the optimized esdl file
-        and esdl string is saved.
+        Check that the updated ESDL resulting from optmizing a network, is correct by using the
+        PoCTutorial and the Grow_workflow. This is done for the actual esdl file and the esdl
+        string created by MESIDO. Both these resulting optimized energy systems should be identical
+        and it is only the MESIDO esdl saving method that differs.
 
         """
 
