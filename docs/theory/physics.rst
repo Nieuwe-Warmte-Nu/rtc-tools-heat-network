@@ -4,7 +4,7 @@ Physics
 =======
 
 Within MESIDO the physics are approximated utilizing the mixed integer linear constraints.
-The goal within MESIDO is to approximate the physics in such a way that the approximation errors result in conservative estimates on the financial aspects of the system, e.g. overestimating cost and underestimating revenue.
+The goal within MESIDO is to approximate the physics in such a way such that the approximation errors result in conservative estimates of the financial aspects of the system, e.g. overestimating cost and underestimating revenue.
 To cater for different design phases different approximation fidelities can be configuration in MESIDO.
 Examples include the approximation of head loss which can be ignored or approximated with multiple linear constraints.
 MESIDO allows for the integral optimization of energy systems having:

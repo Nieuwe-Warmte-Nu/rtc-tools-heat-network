@@ -3,9 +3,9 @@
 Asset Sizing
 ============
 
-MESIDO supports both the placing and sizing decision.
+MESIDO supports both the placing and sizing decisions.
 Where placement is the integer decision if an optional location is selected or not.
-The integer for whether or not an asset is placed is govorned based on whether or not power is exchanged between the asset and other assets over the time horizon, see:
+The integer for whether or not an asset is placed is governed based on whether or not power is exchanged between the asset and other assets over the time horizon, see:
 
 .. math::
     :label: eq:max_placed_power
@@ -22,25 +22,24 @@ The integer for whether or not an asset is placed is govorned based on whether o
 
     \delta^{a}_{placed} \in \{0,1\} \;\;
 
-Where :math:`(q^{a}_{min}, q^{a}_{max})` the lower and upperbound of the power.
+Where :math:`(q^{a}_{min}, q^{a}_{max})` are the lower and upper bounds of the power.
 
-For the sizing MESIDO supports three general methods.
-Depending on the physics can be applied to different assets.
+For the sizing MESIDO supports three general methods, which can be applied to different assets depending on the physics.
 
 Continious Sizing
 -----------------
 
-If an asset is continuously sized the max size var, :math:`x^{a}_{max}` must if given to be larger than the state, :math:`x^{a}`, (e.g. power) with which the size scales.
+If an asset is continuously sized, the max size variable :math:`x^{a}_{max}` must if given to be larger than the state, :math:`x^{a}`, (e.g. power) with which the size scales.
 
 .. math::
     :label: eq:limit_power_ates
 
     -x^{a}_{max}\leq x^{a} \leq x^{a}_{max}
 
-Sizing with aggregation
+Sizing With Aggregation
 -----------------------
 
-If an asset is sized based on its aggregation count then the max size variable, :math:`x^{a}_{max}`,
+If an asset is sized based on its aggregation count, then the max size variable, :math:`x^{a}_{max}`,
 will be bounded based on the amount of aggregations that exist for that asset.
 Examples include the sizing of geothermal sources by their amount of wells, with the power per well.
 
@@ -49,7 +48,7 @@ Examples include the sizing of geothermal sources by their amount of wells, with
 
     x^{a} \leq \delta^{a}_{aggr,count} X^{a}_{single,max}
 
-Sizing with integer modelling
+Sizing With Integer Modelling
 -----------------------------
 
 The integer method can be used if the size of the asset is determined by a number of predefined sizes, :math:`\delta_{j,a}`.
@@ -76,7 +75,7 @@ The sizing integer can then be used to limit the max size variable, e.g. max flo
 
 where :math:`\bar{e_j}` denotes the max value for the state at that sizing option.
 
-Asset sizing method table
+Asset sizing methods employed
 -------------------------
 
 .. list-table:: Asset Sizing Model

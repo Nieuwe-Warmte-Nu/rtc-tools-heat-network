@@ -3,11 +3,11 @@
 Heat Physics
 ============
 
-MESIDO models thermal power (:math:`\dot{Q}`), volumetric flow (:math:`\dot{V}`), and head (:math:`H`) for DHS systems.
-These variables are modelled over all time-steps :math:`K` and for each asset in the system :math:`A`.
+Mesido models thermal power (:math:`\dot{Q}`), volumetric flow (:math:`\dot{V}`), and head (:math:`H`) for DHS systems.
+These variables are modelled over all timesteps :math:`K` and for each asset in the system :math:`A`.
 An asset :math:`a \in A` in the system is modelled using a set of in-ports, denoted by :math:`I^a_{in} \neq \emptyset`, and a set of out-ports, denoted by :math:`I^a_{out} \neq \emptyset`, with :math:`I^a` denoting the union of these two sets.
-For an asset :math:`a` the three variables :math:`\dot{Q}_i, \dot{V}_i`, and :math:`H_i` denote the thermal power, volumetric flow and head for port :math:`i \in I^a`. For readability, the variables and equations of the model, given below, are defined without indexing the variables and sets for each time-step.
-The equations below are assumed to hold for every time-step, unless otherwise specified.
+For an asset :math:`a` the three variables :math:`\dot{Q}_i, \dot{V}_i`, and :math:`H_i` denote the thermal power, volumetric flow and head for port :math:`i \in I^a`. For readability, the variables and equations of the model, given below, are defined without indexing the variables and sets for each timestep.
+The equations below are assumed to hold for every timestep, unless otherwise specified.
 
 Modelling specifically these three variables allows to ensure a hydraulically feasible solution whilst linearizing the physics.
 Energy changes are modelled with the assumption of a constant temperature throughout the network.
@@ -16,7 +16,7 @@ Although this assumption is not realistic, the linearization made will show that
 General Physics
 ---------------
 
-The DHS is modelled as a closed loop system and thus at every time-step and for every asset, mass balance should hold.
+The DHS is modelled as a closed loop system and thus at every timestep and for every asset, mass balance should hold.
 The system is modeled with constant temperature and thus constant density and specific heat.
 The mass balance is provided as a volumetric flow balance in :eq:`eq:flow_balance`.
 
@@ -83,7 +83,7 @@ where
 
 :math:`T_{sup}, T_{ret}`, and :math:`T_{amb}` represent the supply, return and ambient temperatures.
 :math:`A_{pipes}` define the set of pipes with :math:`L^a` being the length of pipe :math:`a`.
-:math:`\delta^a_{discon}` is a boolean variable to model if pipe :math:`a` is in use for a specific time-step.
+:math:`\delta^a_{discon}` is a boolean variable to model if pipe :math:`a` is in use for a specific timestep.
 :math:`d^a_{inner}` and :math:`d^a_{outer}` are the inner and outer diameters of pipe :math:`a` and :math:`k_{subsoil}` is a constant used to model the resistance of the subsoil.
 :math:`\delta^a_{discon}` is modelled by:
 
