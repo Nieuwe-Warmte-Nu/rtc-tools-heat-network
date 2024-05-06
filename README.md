@@ -1,6 +1,6 @@
-# Mesido
+# MESIDO
 
-mesido is an optimization application for optimal planning, design and 
+MESIDO is an optimization application for optimal planning, design and 
 operation of Energy Systems with the current main focus on District Heating Systems (DHS). The current application focuses on a Mixed Integer Linear Problem (MILP) approach, with multiple linearization strategies to conservatively approximate the steady-state physics and financial models.
 All physics, placement, sizing and financial models are combined in the TechnoEconomicMixin class. When inherited this class can be combined with objective functions (that typically incorporate the financial aspects) and interface methods to create an
 optimization workflow (see also running an example).
