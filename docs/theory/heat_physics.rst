@@ -3,7 +3,7 @@
 Heat Physics
 ============
 
-Mesido models thermal power (:math:`\dot{Q}`), volumetric flow (:math:`\dot{V}`), and head (:math:`H`) for DHS systems.
+MESIDO models thermal power (:math:`\dot{Q}`), volumetric flow (:math:`\dot{V}`), and head (:math:`H`) for DHS systems.
 These variables are modelled over all time-steps :math:`K` and for each asset in the system :math:`A`.
 An asset :math:`a \in A` in the system is modelled using a set of in-ports, denoted by :math:`I^a_{in} \neq \emptyset`, and a set of out-ports, denoted by :math:`I^a_{out} \neq \emptyset`, with :math:`I^a` denoting the union of these two sets.
 For an asset :math:`a` the three variables :math:`\dot{Q}_i, \dot{V}_i`, and :math:`H_i` denote the thermal power, volumetric flow and head for port :math:`i \in I^a`. For readability, the variables and equations of the model, given below, are defined without indexing the variables and sets for each time-step.

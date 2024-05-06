@@ -48,7 +48,7 @@ If all is well, you should see something like the following output:
 ![img.png](img.png)
 
 In this example.py file you can see a small workflow being set-up. The PipeDiameterSizingProblem class
-inherits from (Note only the *classes are defined in mesido the others come from rtc-tools package):
+inherits from (Note only the *classes are defined in MESIDO the others come from rtc-tools package):
 - CollocatedIntegratedOptimizationProblem: This class does all the discretization of the state variables in your problem.
 - *ESDLMixin: This class does the parsing and setting up of a model based on an ESDL file.
 - GoalProgrammingMixin: This class allows you to add Goals (objective functions) with different priorities.

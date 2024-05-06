@@ -3,7 +3,7 @@
 Asset Sizing
 ============
 
-Mesido supports both the placing and sizing decision.
+MESIDO supports both the placing and sizing decision.
 Where placement is the integer decision if an optional location is selected or not.
 The integer for whether or not an asset is placed is govorned based on whether or not power is exchanged between the asset and other assets over the time horizon, see:
 
@@ -24,7 +24,7 @@ The integer for whether or not an asset is placed is govorned based on whether o
 
 Where :math:`(q^{a}_{min}, q^{a}_{max})` the lower and upperbound of the power.
 
-For the sizing Mesido supports three general methods.
+For the sizing MESIDO supports three general methods.
 Depending on the physics can be applied to different assets.
 
 Continious Sizing
