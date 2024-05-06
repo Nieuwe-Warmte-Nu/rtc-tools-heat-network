@@ -38,7 +38,7 @@ The investment cost is the cost component that helps to find the minimum asset s
 Variable Operational Cost
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The variable operational cost is the cost component that depends on the useage of the asset over the time horizon.
+The variable operational cost is the cost component that depends on the usage of the asset over the time horizon.
 Typically this is a power consumption or production, which is represented by :math:`x^{a}_{use}`.
 
 .. math::
@@ -50,7 +50,7 @@ Typically this is a power consumption or production, which is represented by :ma
 Fixed Operational Cost
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The fixed operational cost is the cost component that return every X time (typically every calendar year) based on the size of the asset.
+The fixed operational cost is the cost component that returns every X time (typically every calendar year) based on the size of the asset.
 
 .. math::
     :label: eq:fixedopex
