@@ -1,6 +1,5 @@
 import logging
 import math
-import sys
 from typing import List
 
 import casadi as ca

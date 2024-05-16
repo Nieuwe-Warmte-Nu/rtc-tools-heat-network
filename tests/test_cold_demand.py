@@ -73,7 +73,6 @@ class TestColdDemand(TestCase):
         energy_conservation_test(heat_problem, results)
         heat_to_discharge_test(heat_problem, results)
 
-
     def test_wko(self):
         """
         This test is to check the basic physics for a network which includes cold demand. In this
@@ -83,7 +82,7 @@ class TestColdDemand(TestCase):
         TODO: resolve issue in test case
 
         The demand profiles and the size of the heat pump has been chosen such that the heat is
-        required is required to switch on to load the warm well of the WKO.   
+        required is required to switch on to load the warm well of the WKO.
 
         Checks:
         1. demand is matched
@@ -151,7 +150,7 @@ class TestColdDemand(TestCase):
 
         demand_matching_test(heat_problem, results)
         energy_conservation_test(heat_problem, results)
-        heat_to_discharge_test(heat_problem, results) 
+        heat_to_discharge_test(heat_problem, results)
 
         np.testing.assert_allclose(
             results["ATES_226d.Stored_heat"][0], results["ATES_226d.Stored_heat"][-1]
@@ -160,6 +159,7 @@ class TestColdDemand(TestCase):
 
         # Heat pump does not switch on to start loading the WKO.
         # Is this intended for some reason Femke?
+
 
 if __name__ == "__main__":
     test_cold_demand = TestColdDemand()
