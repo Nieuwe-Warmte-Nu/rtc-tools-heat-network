@@ -105,6 +105,8 @@ class TestColdDemand(TestCase):
                 for a in self.energy_system_components.get("low_temperature_ates", []):
                     stored_heat = self.state_vector(f"{a}.Stored_heat")
                     constraints.append(((stored_heat[-1] - stored_heat[0]), 0.0, 0.0))
+                    # This was added to force the heatpump to start loading the WKO 1st 3 timesteps
+                    constraints.append((stored_heat[0], 0.0, 0.0))
 
                 # TODO: confirm if the yearly balance between warm and cold well is heat / flow
                 # related?
@@ -136,7 +138,7 @@ class TestColdDemand(TestCase):
             esdl_file_name="LT_wko_heating_and_cooling.esdl",
             esdl_parser=ESDLFileParser,
             profile_reader=ProfileReaderFromFile,
-            input_timeseries_file="timeseries.csv",
+            input_timeseries_file="timeseries_2.csv",
         )
         results = heat_problem.extract_results()
 
@@ -149,10 +151,11 @@ class TestColdDemand(TestCase):
         )
         np.testing.assert_allclose(results["ATES_226d.Stored_heat"][0], 0.0)
 
+        # Heat pump does not switch on to start loading the WKO.
+        # Is this intended for some reason Femke?
 
 if __name__ == "__main__":
     test_cold_demand = TestColdDemand()
-    # test_cold_demand.test_cold_demand()
     test_cold_demand.test_wko()
 
     a = 1
