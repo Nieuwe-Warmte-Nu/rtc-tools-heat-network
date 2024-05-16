@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 import casadi as ca
 
 from mesido.esdl.esdl_mixin import ESDLMixin
@@ -167,8 +170,16 @@ class HeatProblem(
         """
         goals = super().path_goals().copy()
 
-        for s in self.energy_system_components["heat_source"]:
-            goals.append(MinimizeSourcesHeatGoal(s))
+        try:
+            self.energy_system_components["heat_source"]
+
+            for s in self.energy_system_components["heat_source"]:
+                goals.append(MinimizeSourcesHeatGoal(s))
+        except KeyError:
+            ...
+        except Exception:
+            traceback.print_exc()
+            sys.exit(1)
 
         return goals
 
