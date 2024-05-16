@@ -80,6 +80,8 @@ class TestColdDemand(TestCase):
         case we have a network with an air-water hp, a WKO (warm and cold well) and both hot and
         cold demand.
 
+        TODO: resolve issue in test case
+
         The demand profiles and the size of the heat pump has been chosen such that the heat is
         required is required to switch on to load the warm well of the WKO.   
 
