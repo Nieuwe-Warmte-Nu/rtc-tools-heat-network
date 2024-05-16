@@ -2230,31 +2230,16 @@ class HeatPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
                     #             -np.inf,
                     #      0.0)
                     # )
-            else:  # no temperature states available
-                if ates in [*self.energy_system_components.get("ates", [])]:
-
-                    coeff_efficiency_ates = parameters[f"{ates}.heat_loss_coeff"]
-                    constraints.append(
-                        (
-                            (heat_loss - stored_heat * coeff_efficiency_ates) / heat_loss_nominal,
-                            0.0,
-                            0.0,
-                        )
+            else:
+                # no temperature states available
+                coeff_efficiency_ates = parameters[f"{ates}.heat_loss_coeff"]
+                constraints.append(
+                    (
+                        (heat_loss - stored_heat * coeff_efficiency_ates) / heat_loss_nominal,
+                        0.0,
+                        0.0,
                     )
-                elif ates in [*self.energy_system_components.get("low_temperature_ates", [])]:
-
-                    coeff_efficiency_ates = parameters[f"{ates}.heat_loss_coeff"]
-                    constraints.append(
-                        (
-                            (heat_loss - stored_heat * coeff_efficiency_ates) / heat_loss_nominal,
-                            0.0,
-                            0.0,
-                        )
-                    )
-                else:
-                    logger.error("An invalid type of ATES is accessed")
-                    sys.exit(1)
-
+                )
 
         return constraints
 
