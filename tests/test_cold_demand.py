@@ -76,14 +76,19 @@ class TestColdDemand(TestCase):
 
     def test_wko(self):
         """
-        to be updated -->> This test is to check the basic physics for a network which includes cold demand. In this
-        case we have a network with an air-water hp, a low temperature ates and both hot and cold
-        demand. In this case the demands are matched and the low temperature ates is utilized.
+        This test is to check the basic physics for a network which includes cold demand. In this
+        case we have a network with an air-water hp, a WKO (warm and cold well) and both hot and
+        cold demand.
+
+        The demand profiles and the size of the heat pump has been chosen such that the heat is
+        required is required to switch on to load the warm well of the WKO.   
 
         Checks:
         1. demand is matched
         2. energy conservation in the network
         3. heat to discharge (note cold line is colder than T_ground)
+        4. the cyclic heat_stored contraint, which ensures yearly heat balance between the warm and
+        cold well
 
         """
         import models.wko.src.example as example
