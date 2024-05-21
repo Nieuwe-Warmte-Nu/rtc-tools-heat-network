@@ -21,8 +21,8 @@ EndScenarioSizing
 The EndScenarioSizing workflow is designed to optimize a district heating network by taking into account both asset (pipes, sources, storages, etc.) sizing and operational strategy for the lowest Total Cost of Ownership.
 This workflow comes in a few variants that give the user the possibility to trade-off computational time with model assumptions.
 
-* (EndScenarioSizingNoHeatLosses)
 * EndScenarioSizing
+* EndScenarioSizingNoHeatLosses
 * EndScenarioSizingDiscounted
 * EndScenarioSizingHeadLoss
 * EndScenarioSizingHeadLossDiscounted
@@ -51,7 +51,7 @@ This allows for a much easier mathematical representation of the problem an henc
 In the second stage the heat losses in the network are taken into account, however now the problem is bounded with the information of the first stage.
 Pipes will only be allowed to be at least as large as the result of the first stage or one DN size larger.
 Furthermore, the flow directions will be utilized if the flow meets a minimum threshold value.
-Lastly, sources will now have a lower bound with the minimum of the first stage.
+Lastly, sources placed in the first stage will also be placed in the second stage.
 
 In its default configuration the workflow has the following main assumptions:
 
@@ -80,7 +80,7 @@ This workflow has the advantage that it is much faster (typically > factor 10) t
 Therefore, it is recommended to use this workflow in the initial phases of analysis with larger networks.
 This workflow will allow the user to make quicker iterations on the input ESDL file and debug possible errors in a shorter time-frame.
 
-EndScenarioSizingNoHeatLosses workflow should not be used as a replacement of the EndScenarioSizing workflow as heat losses can be up to 20% of the demand and should not be neglected for design.
+EndScenarioSizingNoHeatLosses workflow should not be used as a replacement of the EndScenarioSizing workflow as heat losses can be up to 30% of the demand and should not be neglected for design.
 
 
 EndScenarioSizingDiscounted
@@ -99,4 +99,9 @@ The EndScenarioSizingHeadLoss provides everything the EndScenarioSizing workflow
 
 * Taking into account the pressure drops in the network.
 * Computing the hydraulic power and thereby the pumping power. It is assumed that every source will have a pump. The pumping cost will be computed with the electricity price profile if an electricity carrier is specified in the ESDL file.
+
+EndScenarioSizingHeadLossDiscounted
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The EndScenarioSizingHeadLossDiscounted workflow combines the added functionality of EndScenarioSizingDiscounted and EndScenarioSizingHeadLoss into one workflow.
 

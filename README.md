@@ -53,7 +53,7 @@ inherits from (Note only the *classes are defined in MESIDO the others come from
 - *ESDLMixin: This class does the parsing and setting up of a model based on an ESDL file.
 - GoalProgrammingMixin: This class allows you to add Goals (objective functions) with different priorities.
 - LinearizedOrderGoalProgrammingMixin: This class allows you to add higher order goals (e.g. order=2) for MILP problems.
-- *TechnoEconomicMixin: This class adds all the network physics and sizing variables for MILP problems. 
+- *TechnoEconomicMixin: This class combines all the Mixin classes required for a full techno-economic optimization. 
 
 Within the PipeDiameterSizingProblem class you can see that the path_goals() function is overwritten and that
 a path_goal with priority one is added to meet the heat demands. The definition path_goal is used
