@@ -4,7 +4,7 @@ Design Toolkit Workflows
 ========================
 
 This page eleborates on the available Design Toolkit workflows within MESIDO.
-The Design Toolkit is a subsidy funded project (NieuweWarmteNu) to help different organizatons in the district heating value chain with sketch and conceptual designing of District Heating Systems (DHS).
+The Design Toolkit is a subsidy funded project (NieuweWarmteNu) to help different organizatons in the district heating value chain with draft and/or conceptual designing of District Heating Systems (DHS).
 For more information see : https://nwn.nu/projecten/innovaties/design-toolkit-warmtenetten/.
 MESIDO is by no means limited to only these workflows, but it is left to the user itself to define the most logical workflow if the ones below are unsuitable.
 
@@ -57,7 +57,7 @@ In its default configuration the workflow has the following main assumptions:
 
 * The whole network is realized instantaneously, as a single year is optimized and extrapolated for the lifetime.
     * In reality the realization of DHS is done in phases over a period of years. Hence this assumption is not valid, but allows the user to judge the long term feasibilty of the DHS system. For closing business case computation the effects of phased realization should be taken into account.
-* Pressure drops are not taken into account, a maximum flow velocity of 3 m/s is used to limit the pressure drop per meter in the pipes.
+* Pressure drops are not taken into account. However, a maximum flow velocity of 3 m/s is used for each pipe.
     * This assumptions is sufficient when the user is still in a phase where the exact location of (booster-)pumps is to be determined and hence limiting the sizing of pipes with pressure drop calculations would not be representative.
     * Note that EndScenarioSizingHeadLoss can be used when the user wants the pressure drop functionality.
 * Investment costs are not discounted and all assets depreciate to zero over the system lifetime.

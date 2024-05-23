@@ -29,7 +29,7 @@ For the sizing MESIDO supports three general methods, which can be applied to di
 Continious Sizing
 -----------------
 
-If an asset is continuously sized, the max size variable :math:`x^{a}_{max}` must if given to be larger than the state, :math:`x^{a}`, (e.g. power) with which the size scales.
+If an asset is continuously sized then the max size variable, :math:`x^{a}_{max}`, must be larger than the state, :math:`x^{a}`, (e.g. power) for every time step.
 
 .. math::
     :label: eq:limit_power_ates

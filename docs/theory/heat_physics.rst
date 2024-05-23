@@ -3,7 +3,7 @@
 Heat Physics
 ============
 
-Mesido models thermal power (:math:`\dot{Q}`), volumetric flow (:math:`\dot{V}`), and head (:math:`H`) for DHS systems.
+MESIDO models thermal power (:math:`\dot{Q}`), volumetric flow (:math:`\dot{V}`), and head (:math:`H`) for DHS systems.
 These variables are modelled over all timesteps :math:`K` and for each asset in the system :math:`A`.
 An asset :math:`a \in A` in the system is modelled using a set of in-ports, denoted by :math:`I^a_{in} \neq \emptyset`, and a set of out-ports, denoted by :math:`I^a_{out} \neq \emptyset`, with :math:`I^a` denoting the union of these two sets.
 For an asset :math:`a` the three variables :math:`\dot{Q}_i, \dot{V}_i`, and :math:`H_i` denote the thermal power, volumetric flow and head for port :math:`i \in I^a`. For readability, the variables and equations of the model, given below, are defined without indexing the variables and sets for each timestep.
@@ -155,7 +155,7 @@ Although the constraints by themselves will not guarantee a physically feasible 
     Schematic visualization of how the linear constraints are fitted to the head loss curve.
 
 This method with linear inequalities is only valid when every unique route the flow can take in the network has a control valve to compensate non-physical head loss induced by the optimizer.
-Alternatively a (piece-wise) linear equality constraint between min and max flow-rate can be configured for cases where this assumption is invalid.
+Alternatively a (piece-wise) linear equality constraint between min and max flow rate can be configured for cases where this assumption is invalid.
 
 KOBUS CAN YOU WRITE OUT THE EQUATIONS FOR THIS.
 
@@ -213,7 +213,7 @@ The source adds thermal power to the network.
 The energy balance is given by :eq:`eq:general_energy_balance` where :math:`\dot{Q}^a_{consumed}` is equal to the (negative) value of the produced heat.
 
 The addition of energy is executed by increasing the temperature of the incoming water (the return network) to the outgoing supply temperature.
-Therefore, the volumetric flow-rate is linked to the outgoing thermal power with the outgoing supply temperature with equality constraints:
+Therefore, the volumetric flow rate is linked to the outgoing thermal power with the outgoing supply temperature with equality constraints:
 
 
 .. math::
@@ -232,7 +232,7 @@ The overestimation of the thermal power required will induce an overestimation o
 
 The source is assumed to act within one hydraulically coupled network, :eq:`eq:flow_balance`.
 
-A source is modelled with a pump to reach its desired flow-rate and head:
+A source is modelled with a pump to reach its desired flow rate and head:
 
 .. math::
     :label: eq:source_pump_dh
