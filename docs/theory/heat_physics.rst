@@ -11,13 +11,13 @@ The equations below are assumed to hold for every timestep, unless otherwise spe
 
 Modelling specifically these three variables allows to ensure a hydraulically feasible solution whilst linearizing the physics.
 Energy changes are modelled with the assumption of a constant temperature throughout the network.
-Although this assumption is not realistic, the linearization made will show that the effects of these assumptions are relatively small and conservative to the objective function outcome.
+Although this assumption is not realistic, the linearizations made will show that the effects of these assumptions are relatively small and conservative to the objective function outcome.
 
 General Physics
 ---------------
 
 The DHS is modelled as a closed loop system and thus at every timestep and for every asset, mass balance should hold.
-The system is modeled with constant temperature and thus constant density and specific heat.
+The system is modelled with constant temperature and thus constant density and specific heat.
 The mass balance is provided as a volumetric flow balance in :eq:`eq:flow_balance`.
 
 .. math::
@@ -26,7 +26,7 @@ The mass balance is provided as a volumetric flow balance in :eq:`eq:flow_balanc
     \sum_{i \in I^a} \dot{V}_{i} = 0 \;\; \forall a \in A
 
 
-To garuantee energy balance :eq:`eq:general_energy_balance` is applied.
+The energy balance is guaranteed by :eq:`eq:general_energy_balance`.
 
 .. math::
     :label: eq:general_energy_balance
@@ -34,7 +34,7 @@ To garuantee energy balance :eq:`eq:general_energy_balance` is applied.
     \sum_{i \in I} \dot{Q}_i + \dot{Q}^a_{consumed} = 0 \;\; \forall a \in A
 
 :math:`\dot{Q}^a_{consumed}` is the thermal power consumed by asset :math:`a`.
-The power losses for the asset are included in this variable. Furthermore, the convention that positive consumed power is equal to thermal power production of an asset.
+The power losses for the asset are included in this variable. Furthermore, the convention is that positive consumed thermal power is equal to thermal power production of an asset.
 
 Network Physics
 ---------------
@@ -95,12 +95,12 @@ where
 
     \dot{Q}_{i} - \delta_{discon}M \leq 0 \;\; \forall i \in I^a \;\; \forall a \in A_{pipes}.
 
-Here :math:`M` is a sufficiently large constant used in a method called the big-M method :cite:`vielma2015mixed`.
+Here :math:`M` is a sufficiently large constant used in a method called the big-M method :cite:`vielma2015mixed` to enable or disable a constraint.
 
 The thermal power loss is assumed to be constant as the pipe temperature is assumed to be constant.
 The outgoing temperatures at the assets (e.g. supply at the source and return at the demand) are used to ensure an overestimation of the thermal loss. In reality the temperature w.r.t. the ambient decreases as the temperature drops over the pipe with the energy loss.
 
-Typical temperature drops in the primary network are up to 3 degrees, this implies that for medium temperature networks, operating at 75 degrees and with an ambient of 15 degrees, the error for the heat loss estimation is less than :math:`\frac{3}{75-15} \approx 5\%`.
+Typical temperature drops in the primary network are up to 3 degrees, this implies that for medium temperature networks, operating at 75°C and with an ambient of 15°C, the error for the heat loss estimation is less than :math:`\frac{3}{75-15} \approx 5\%`.
 
 Inequality constraints are used to relate the volumetric flow :math:`\dot{V}` and the heat flow :math:`\dot{Q}` through pipes as a compensation of heat losses is required.
 Please note that the :math:`\dot{V}` and the heat flow :math:`\dot{Q}` will be related by equality constraints for the outgoing flow at the assets, ensuring that the thermal power propagates correctly through the network.
@@ -194,7 +194,7 @@ Node
 
 The node conserves the flow with :eq:`eq:flow_balance` and the energy with :eq:`eq:general_energy_balance`.
 
-All heads connected to the node must be equal to ensure hydraulically feasible solution:
+The head of all pipes connected to the node must be equal to ensure a hydraulically feasible solution:
 
 .. math::
     :label: eq:node_head
@@ -254,11 +254,11 @@ an equality constraint relates outgoing thermal power with volumetric flow:
 
 where :math:`A_{demand}` is the set of demand assets.
 
-The combination of constraints ate the producers and demands, results in a smaller achieved temperature difference at the demand than the difference between the given temperatures for the supply and return side, and a larger achieved temperature difference at the producer.
+The combination of constraints a the producers and demands, results in a smaller achieved temperature difference at the demand than the difference between the given temperatures for the supply and return side, and a larger achieved temperature difference at the producer.
 
-Similar as for the source the demand acts within one hydraulically coupled system under the same assumptions, see :eq:`eq:flow_balance`.
+Similar as for the source, the demand acts within one hydraulically coupled system under the same assumptions, see :eq:`eq:flow_balance`.
 
-Every demand is modelled with a control valve to regulate its flow. In reality a minimum head loss is be maintained is ofter maintained:
+Every demand is modelled with a control valve to regulate its flow. In reality a minimum head loss is often maintained:
 
 .. math::
     :label: eq:demand_head
@@ -277,14 +277,14 @@ Storage assets add time flexibility with the production and consumption of therm
 
     \dot{Q}^{a}_{consumed} =  \sum_{i \in I^a_{in}} \dot{Q}^{a}_{i} -  \sum_{i \in I^a_{out}} \dot{Q}^{a}_{i} - \dot{Q}^{a}_{loss} \;\; \forall a \in A_{storage}.
 
-The consumed heat of the storage assets is equated to the change change in stored heat, :math:`\dot{Q}^{a}_{stored}`:
+The consumed heat of the storage assets is equated to the change in stored heat, :math:`\dot{Q}^{a}_{stored}`:
 
 .. math::
     :label: eq:stored_heat
 
     \dot{Q}^{a}_{consumed} = \dot{Q}^{a}_{stored} \;\; \forall a \in A_{storage}
 
-Like the source and demand assets the storage needs equality constraints relating the outgoing flow to the thermal power.
+Like the source and demand assets, the storage needs equality constraints relating the outgoing flow to the thermal power.
 Unlike the demand and source the outgoing flow can be either on the in or out port depending whether the storage is charging or discharging.
 The default convention is that charging indicates positive flow, therefore :math:`\delta_{dir}` can be used as an integer for charging/discharging.
 Equations :eq:`eq:storage_heat2discharge1` and :eq:`eq:storage_heat2discharge2` are active during charging, and during discharging,
@@ -343,8 +343,8 @@ Two HT-ATES modelling methods are available. The first approximation for heat lo
 The second method: COMING SOON...
 
 
-Similarly as for the other assets the storage assets are assumed to act within the hydraulically coupled system,
-nonetheless the volumetric flow balance requires additional equations.
+Similarly as for the other assets, the storage assets are assumed to act within the hydraulically coupled system;
+nonetheless, the volumetric flow balance requires additional equations.
 The storage is modelled as an asset with a hot and cold volume.
 The total volume will be conserved by the in- and outflow at the storage.
 
