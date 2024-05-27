@@ -143,23 +143,7 @@ The head loss, :math:`dH` must be compensated by pumps which are assumed to be l
 
 Steady-state head losses can be closely modelled with a quadratic relation w.r.t. :math:`\dot{V}`.
 A set of linear inequalities is used, see :numref:`inequalitydH`, to approximate the quadratic curve.
-The general form of the inequalities is given below in :eq:`eq:pipe_head_loss1`-:eq:`eq:pipe_hp2` These inequalities force the head loss to be greater or equal to the approximated quadratic curve.
-Although the constraints by themselves will not guarantee a physically feasible answer, the optimization will in drag the solution to an equality constraint as the objective function will minimize cost which reduces with lower pressure drop.
-
-.. _inequalitydH:
-
-.. figure:: ../images/linearlines.png
-    :figwidth: 6.94792in
-    :align: center
-
-    Schematic visualization of how the linear constraints are fitted to the head loss curve.
-
-This method with linear inequalities is only valid when every unique route the flow can take in the network has a control valve to compensate non-physical head loss induced by the optimizer.
-Alternatively a (piece-wise) linear equality constraint between min and max flow rate can be configured for cases where this assumption is invalid.
-
-KOBUS CAN YOU WRITE OUT THE EQUATIONS FOR THIS.
-
-Note that the big M method is used with the flow direction and disconnected integers to allow for modelling of bi-directional flow and the ability to disconnect pipes.
+The general form of the inequalities is given below in :eq:`eq:pipe_head_loss1`-:eq:`eq:pipe_head_loss2`. Note that the big M method is used with the flow direction and disconnected integers to allow for modelling of bi-directional flow and the ability to disconnect pipes.
 
 .. math::
     :label: eq:pipe_head_loss1
@@ -172,6 +156,17 @@ Note that the big M method is used with the flow direction and disconnected inte
     dH - (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} + \delta^a_{dir})M\leq 0 \\  \forall (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
 
 Where :math:`(\alpha_j, \beta_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation.
+
+These inequalities force the head loss to be greater or equal to the approximated quadratic curve.
+Although the constraints by themselves will not guarantee a physically feasible answer, the optimization will in drag the solution to an equality constraint as the objective function will minimize cost which reduces with lower pressure drop.
+
+.. _inequalitydH:
+
+.. figure:: ../images/linearlines.png
+    :figwidth: 6.94792in
+    :align: center
+
+    Schematic visualization of how the linear constraints are fitted to the head loss curve.
 
 Similar as with head loss the hydraulic power, :math:`HP^a`, required to overcome the head losses is modelled with a set of linear inequalities:
 
@@ -188,6 +183,21 @@ Similar as with head loss the hydraulic power, :math:`HP^a`, required to overcom
     \forall (c_j, d_j) \;\; \forall a \in A_{pipes}.
 
 Here :math:`(c_j, d_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation.
+
+The method with linear inequalities, as represented above, is only valid when each possible unique flow path route in the network has a control valve to compensate non-physical head loss induced by the optimizer. Alternatively a (piece-wise) linear equality constraint between min and max flow rate can be configured for cases where this assumption is invalid, with the general form represented by :eq:`eq:pipe_head_loss3`-:eq:`eq:pipe_head_loss4`.
+
+.. math::
+    :label: eq:pipe_head_loss3
+
+    dH - (\alpha_j \dot{V} + \beta_j) + (\delta^a_{discon} + (1-\delta^a_{dir}) + (1 - \delta^a_{line\_seg}))M\geq 0 \\ \delta^a_{line\_seg} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
+
+.. math::
+    :label: eq:pipe_head_loss4
+
+    dH - (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} + \delta^a_{dir} + (1 - \delta^a_{line\_seg}))M\leq 0 \\  \delta^a_{line\_seg} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
+
+Where :math:`(\alpha_j, \beta_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation. Variable :math:`\delta_{line\_seg}` reperesents an integer value indicating if a linear line segment is active (value = 1) or not (value = 0). 
+
 
 Node
 ~~~~
