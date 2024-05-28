@@ -814,12 +814,12 @@ class ScenarioOutput(TechnoEconomicMixin):
             # When a pipe has not been optimized, enforce pipe to be shown in the simulator
             # ESDL.
             if not pipe_classes:
-                if optimizer_sim:
+                if not optimizer_sim:
                     continue
                 else:
                     asset.state = esdl.AssetStateEnum.ENABLED
 
-            if optimizer_sim:
+            if not optimizer_sim:
                 pipe_class = self.get_optimized_pipe_class(pipe)
             cold_pipe = self.hot_to_cold_pipe(pipe)
 
@@ -831,7 +831,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                 # print(pipe + " has pipeclass: " + pipe_class.name )
                 # print(pipe + f" has diameter: " + pipe_class.name)
 
-                if optimizer_sim:
+                if not optimizer_sim:
                     assert isinstance(pipe_class, EDRPipeClass)
 
                     asset_edr = esh_edr.load_from_string(pipe_class.xml_string)
@@ -849,7 +849,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                     except UnboundLocalError:
                         pass
 
-                    if optimizer_sim:
+                    if not optimizer_sim:
                         for prop in edr_pipe_properties_to_copy:
                             setattr(asset, prop, getattr(asset_edr, prop))
             else:
