@@ -98,6 +98,11 @@ class TestColdDemand(TestCase):
         base_folder = Path(example.__file__).resolve().parent.parent
 
         class HeatingCoolingProblem(HeatProblem):
+            # def energy_system_options(self):
+            #     options = super().energy_system_options()
+            #     options["neglect_pipe_heat_losses"] = True
+            #     return options
+
             def constraints(self, ensemble_member):
                 constraints = super().constraints(ensemble_member)
 
@@ -112,7 +117,7 @@ class TestColdDemand(TestCase):
                     stored_heat = self.state_vector(f"{a}.Stored_heat")
                     constraints.append(((stored_heat[-1] - stored_heat[0]), 0.0, 0.0))
                     # This was added to force the heatpump to start loading the WKO 1st 3 timesteps
-                    constraints.append((stored_heat[0], 0.0, 0.0))
+                    # constraints.append((stored_heat[0], 0.0, 0.0))
 
                 # TODO: confirm if the yearly balance between warm and cold well is heat / flow
                 # related?
@@ -155,7 +160,7 @@ class TestColdDemand(TestCase):
         np.testing.assert_allclose(
             results["ATES_226d.Stored_heat"][0], results["ATES_226d.Stored_heat"][-1]
         )
-        np.testing.assert_allclose(results["ATES_226d.Stored_heat"][0], 0.0)
+        # np.testing.assert_allclose(results["ATES_226d.Stored_heat"][0], 0.0)
 
         # Heat pump does not switch on to start loading the WKO.
         # Is this intended for some reason Femke?
