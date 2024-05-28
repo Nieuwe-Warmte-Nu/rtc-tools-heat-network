@@ -34,7 +34,7 @@ The energy balance is guaranteed by :eq:`eq:general_energy_balance`.
     \sum_{i \in I} \dot{Q}_i + \dot{Q}^a_{consumed} = 0 \;\; \forall a \in A
 
 :math:`\dot{Q}^a_{consumed}` is the thermal power consumed by asset :math:`a`.
-The power losses for the asset are included in this variable. Furthermore, the convention is that positive consumed thermal power is equal to thermal power production of an asset.
+The power losses for the asset are included in this variable. 
 
 Network Physics
 ---------------
@@ -148,12 +148,12 @@ The general form of the inequalities is given below in :eq:`eq:pipe_head_loss1`-
 .. math::
     :label: eq:pipe_head_loss1
 
-    dH - (\alpha_j \dot{V} + \beta_j) + (\delta^a_{discon} + 1-\delta^a_{dir})M\geq 0 \\ \forall (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
+    dH - (\alpha_j \dot{V} + \beta_j) + (\delta^a_{discon} + \delta^a_{dir})M\geq 0 \\ \forall (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
 
 .. math::
     :label: eq:pipe_head_loss2
 
-    dH - (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} + \delta^a_{dir})M\leq 0 \\  \forall (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
+    dH + (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} + (1-\delta^a_{dir}))M\leq 0 \\  \forall (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
 
 Where :math:`(\alpha_j, \beta_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation.
 
@@ -184,19 +184,29 @@ Similar as with head loss the hydraulic power, :math:`HP^a`, required to overcom
 
 Here :math:`(c_j, d_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation.
 
-The method with linear inequalities, as represented above, is only valid when each possible unique flow path route in the network has a control valve to compensate non-physical head loss induced by the optimizer. Alternatively a (piece-wise) linear equality constraint between min and max flow rate can be configured for cases where this assumption is invalid, with the general form represented by :eq:`eq:pipe_head_loss3`-:eq:`eq:pipe_head_loss4`.
+The method with linear inequalities, as represented above, is only valid when each possible unique flow path route in the network has a control valve to compensate non-physical head loss induced by the optimizer. Alternatively a (piece-wise) linear equality constraint between min and max flow rate can be configured for cases where this assumption is invalid, with the general form represented by :eq:`eq:pipe_head_loss3`-:eq:`eq:pipe_head_loss6`.
 
 .. math::
     :label: eq:pipe_head_loss3
 
-    dH - (\alpha_j \dot{V} + \beta_j) + (\delta^a_{discon} + (1-\delta^a_{dir}) + (1 - \delta^a_{line\_seg}))M\geq 0 \\ \delta^a_{line\_seg} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
+    dH - (\alpha_j \dot{V} + \beta_j) + (\delta^a_{discon} + \delta^a_{dir} + (1 - \delta^a_{line\_seg_{k}}))M\geq 0 \\ \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
 
 .. math::
     :label: eq:pipe_head_loss4
 
-    dH - (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} + \delta^a_{dir} + (1 - \delta^a_{line\_seg}))M\leq 0 \\  \delta^a_{line\_seg} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
+    dH - (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} - \delta^a_{dir} + (1 - \delta^a_{line\_seg_{k}}))M\geq 0 \\  \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
 
-Where :math:`(\alpha_j, \beta_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation. Variable :math:`\delta_{line\_seg}` reperesents an integer value indicating if a linear line segment is active (value = 1) or not (value = 0). 
+.. math::
+    :label: eq:pipe_head_loss5
+
+    dH + (\alpha_j \dot{V} + \beta_j) - (\delta^a_{discon} + (1 - \delta^a_{dir}) + (1 - \delta^a_{line\_seg_{k}}))M\leq 0 \\ \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
+
+.. math::
+    :label: eq:pipe_head_loss6
+
+    dH + (\alpha_j\dot{V} + \beta_j) + (\delta^a_{discon} - (1-\delta^a_{dir}) + (1 - \delta^a_{line\_seg_{k}}))M\leq 0 \\  \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
+
+Where :math:`(\alpha_j, \beta_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation. Variable :math:`\delta^a_{line\_seg_{k}}` reperesents an integer, for pipe :math:`a`, value indicating if a linear line segment :math:`k` is active (value = 1) or not (value = 0). This would imply that if a quadratic curve is represented by 3 linear lines for instance, then only 1 of the linear lines are appplicable at a specific timestep.    
 
 
 Node
@@ -264,7 +274,7 @@ an equality constraint relates outgoing thermal power with volumetric flow:
 
 where :math:`A_{demand}` is the set of demand assets.
 
-The combination of constraints a the producers and demands, results in a smaller achieved temperature difference at the demand than the difference between the given temperatures for the supply and return side, and a larger achieved temperature difference at the producer.
+The combination of constraints at the producers and demands, results in a smaller achieved temperature difference at the demand than the difference between the given temperatures for the supply and return side, and a larger achieved temperature difference at the producer due to pipe heat losses.
 
 Similar as for the source, the demand acts within one hydraulically coupled system under the same assumptions, see :eq:`eq:flow_balance`.
 
@@ -335,11 +345,6 @@ where :math:`Q^{a}_{stored}` is the heat stored in the storage asset and :math:`
 The efficiency factor is approximated assuming that tanks are cylindrical and lose heat over their surface area, see :eq:`eq:etatank`.
 For cylindrical tanks their surface area approximately increases linearly with the stored heat.
 A radiation coefficient, :math:`c_r`, of 1 :math:`W/m^2` is used as an approximation.
-
-.. math::
-    :label: eq:etatank
-
-    \beta_{tank} = \frac{2c_r}{r\rho c_p}
 
 HT-ATES
 ^^^^^^^
