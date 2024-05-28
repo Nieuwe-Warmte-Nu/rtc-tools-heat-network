@@ -194,7 +194,7 @@ The method with linear inequalities, as represented above, is only valid when ea
 .. math::
     :label: eq:pipe_head_loss4
 
-    dH - (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} - \delta^a_{dir} + (1 - \delta^a_{line\_seg_{k}}))M\geq 0 \\  \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
+    dH - (\alpha_j\dot{V} + \beta_j) - (\delta^a_{discon} + \delta^a_{dir} + (1 - \delta^a_{line\_seg_{k}}))M\leq 0 \\  \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes},
 
 .. math::
     :label: eq:pipe_head_loss5
@@ -204,7 +204,7 @@ The method with linear inequalities, as represented above, is only valid when ea
 .. math::
     :label: eq:pipe_head_loss6
 
-    dH + (\alpha_j\dot{V} + \beta_j) + (\delta^a_{discon} - (1-\delta^a_{dir}) + (1 - \delta^a_{line\_seg_{k}}))M\leq 0 \\  \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
+    dH + (\alpha_j\dot{V} + \beta_j) + (\delta^a_{discon} + (1-\delta^a_{dir}) + (1 - \delta^a_{line\_seg_{k}}))M\geq 0 \\  \delta^a_{line\_seg_{k}} \in \{ 0, 1 \}, (\alpha_j, \beta_j) \;\; \forall a \in A_{pipes}.
 
 Where :math:`(\alpha_j, \beta_j)` are the coefficients and constants of the linear equations used to approximate the quadratic equation. Variable :math:`\delta^a_{line\_seg_{k}}` reperesents an integer, for pipe :math:`a`, value indicating if a linear line segment :math:`k` is active (value = 1) or not (value = 0). This would imply that if a quadratic curve is represented by 3 linear lines for instance, then only 1 of the linear lines are appplicable at a specific timestep.    
 
