@@ -1,5 +1,5 @@
 
-Multi-Energy-Systems Integrated Desing and Operations Documentation
+Multi-Energy-Systems Integrated Design and Operations Documentation
 ===================================================================
 
 This is the documentation for MESIDO.
