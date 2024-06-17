@@ -1,6 +1,7 @@
 import locale
 import logging
 import os
+import sys
 import time
 
 from mesido.esdl.esdl_additional_vars_mixin import ESDLAdditionalVarsMixin
@@ -344,7 +345,20 @@ class EndScenarioSizing(
         parameters = self.parameters(0)
         # bounds = self.bounds()
         # Optimized ESDL
-        self._write_updated_esdl(self._ESDLMixin__energy_system_handler.energy_system)
+        # Assume there are either no stages (write updated ESDL) or a 2 stages (only write final
+        # results on stage 2)
+        try:
+            if self._stage == 2:  # When staging does exists
+                self._write_updated_esdl(self._ESDLMixin__energy_system_handler.energy_system)
+            elif self._stage > 2:
+                logger.error(f"The code does not cater for a straging value of: {self._stage}")
+                sys.exit(1)
+        except AttributeError:
+            # Staging does not exist
+            self._write_updated_esdl(self._ESDLMixin__energy_system_handler.energy_system)
+        except Exception:
+            logger.error("Unkown error occured when evaluating self._stage for _write_updated_esdl")
+            sys.exit(1)
 
         for d in self.energy_system_components.get("heat_demand", []):
             realized_demand = results[f"{d}.Heat_demand"]
