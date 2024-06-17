@@ -226,25 +226,25 @@ class InfluxDBProfileReader(BaseProfileReader):
                 )
                 unique_profiles.append(profile)
 
-            unique_series.append(
-                self._load_profile_timeseries_from_database(profile=unique_profiles[-1])
-            )
-            self._check_profile_time_series(
-                profile_time_series=unique_series[-1], profile=unique_profiles[-1]
-            )
-            if self._reference_datetimes is None:
-                # TODO: since the previous function ensures it's a date time index, I'm not sure
-                #  how to get rid of this type checking warning
-                self._reference_datetimes = unique_series[-1].index
-            else:
-                if not all(unique_series[-1].index == self._reference_datetimes):
-                    raise RuntimeError(
-                        f"Obtained a profile for asset {profile.field} with a "
-                        f"timeseries index that doesn't match the timeseries of "
-                        f"other assets. Please ensure that the profile that is "
-                        f"specified to be loaded for each asset covers exactly the "
-                        f"same timeseries. "
-                    )
+                unique_series.append(
+                    self._load_profile_timeseries_from_database(profile=unique_profiles[-1])
+                )
+                self._check_profile_time_series(
+                    profile_time_series=unique_series[-1], profile=unique_profiles[-1]
+                )
+                if self._reference_datetimes is None:
+                    # TODO: since the previous function ensures it's a date time index, I'm not sure
+                    #  how to get rid of this type checking warning
+                    self._reference_datetimes = unique_series[-1].index
+                else:
+                    if not all(unique_series[-1].index == self._reference_datetimes):
+                        raise RuntimeError(
+                            f"Obtained a profile for asset {profile.field} with a "
+                            f"timeseries index that doesn't match the timeseries of "
+                            f"other assets. Please ensure that the profile that is "
+                            f"specified to be loaded for each asset covers exactly the "
+                            f"same timeseries. "
+                        )
         # Loop trough all the requried profiles in the energy system and assign the profile data:
         # - series: use the unique series data, without reading from the database again
         # - other profile info: get it from the specific profile
