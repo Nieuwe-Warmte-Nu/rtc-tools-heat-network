@@ -16,6 +16,7 @@ from esdl.profiles.profilemanager import ProfileManager
 import mesido.esdl.esdl_parser
 from mesido.constants import GRAVITATIONAL_CONSTANT
 from mesido.esdl.edr_pipe_class import EDRPipeClass
+from mesido.network_common import NetworkSettings
 from mesido.techno_economic_mixin import TechnoEconomicMixin
 from mesido.workflows.utils.helpers import _sort_numbered
 
@@ -296,7 +297,16 @@ class ScenarioOutput(TechnoEconomicMixin):
                 )
             )
 
-    def _write_updated_esdl(self, energy_system, optimizer_sim: bool = False):
+    def _write_updated_esdl(
+        self,
+        energy_system,
+        network_type,
+        optimizer_sim: bool = False,
+    ):
+        if network_type != NetworkSettings.NETWORK_TYPE_HEAT:
+            logger.error(f"_write_updated_esdl does not support network type: {network_type}")
+            sys.exit(1)
+
         from esdl.esdl_handler import EnergySystemHandler
 
         results = self.extract_results()

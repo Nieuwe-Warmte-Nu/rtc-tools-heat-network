@@ -6,6 +6,7 @@ import time
 from mesido.esdl.esdl_additional_vars_mixin import ESDLAdditionalVarsMixin
 from mesido.esdl.esdl_mixin import ESDLMixin
 from mesido.head_loss_class import HeadLossOption
+from mesido.network_common import NetworkSettings
 from mesido.techno_economic_mixin import TechnoEconomicMixin
 from mesido.workflows.goals.minimize_tco_goal import MinimizeTCO
 from mesido.workflows.io.write_output import ScenarioOutput
@@ -344,7 +345,10 @@ class EndScenarioSizing(
         parameters = self.parameters(0)
         # bounds = self.bounds()
         # Optimized ESDL
-        self._write_updated_esdl(self._ESDLMixin__energy_system_handler.energy_system)
+        self._write_updated_esdl(
+            self._ESDLMixin__energy_system_handler.energy_system,
+            NetworkSettings.NETWORK_TYPE_HEAT,
+        )
 
         for d in self.energy_system_components.get("heat_demand", []):
             realized_demand = results[f"{d}.Heat_demand"]
