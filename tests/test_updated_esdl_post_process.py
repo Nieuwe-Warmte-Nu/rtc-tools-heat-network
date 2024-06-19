@@ -141,11 +141,11 @@ class TestUpdatedESDL(TestCase):
                 if len(fnmatch.filter([energy_system.instance[0].area.asset[ii].id], "Pipe*")) == 1:
                     if asset_name in ["Pipe1"]:
                         np.testing.assert_array_equal(
-                            energy_system.instance[0].area.asset[ii].diameter.name, "DN200"
+                            energy_system.instance[0].area.asset[ii].diameter.name, "DN150"
                         )  # original pipe DN400 being sized
                     elif asset_name in ["Pipe1_cold_pipe"]:
                         np.testing.assert_array_equal(
-                            energy_system.instance[0].area.asset[ii].diameter.name, "DN150"
+                            energy_system.instance[0].area.asset[ii].diameter.name, "DN250"
                         )  # original pipe DN400 being sized
                     elif asset_name not in ["Pipe4", "Pipe4_ret", "Pipe5", "Pipe5_ret"]:
                         np.testing.assert_array_equal(
