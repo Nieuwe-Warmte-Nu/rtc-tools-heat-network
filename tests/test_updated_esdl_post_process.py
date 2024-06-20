@@ -73,18 +73,21 @@ class TestUpdatedESDL(TestCase):
             # Test KPIs in optimized ESDL
 
             # High level checks of KPIs
-            number_of_kpis_top_level_in_esdl = 8
+            number_of_kpis_top_level_in_esdl = 11
             high_level_kpis_euro = [
-                "High level cost breakdown [EUR]",
-                "Overall cost breakdown [EUR]",
+                "High level cost breakdown [EUR] (year 1)",
+                "High level cost breakdown [EUR] (lifetime)",
+                "Overall cost breakdown [EUR] (year 1)",
+                "Overall cost breakdown [EUR] (lifetime)",
                 "CAPEX breakdown [EUR]",
-                "OPEX breakdown [EUR]",
+                "OPEX breakdown [EUR] (year 1)",
+                "OPEX breakdown [EUR] (lifetime)",
                 "Area_76a7: Asset cost breakdown [EUR]",
                 "Area_9d0f: Asset cost breakdown [EUR]",
                 "Area_a58a: Asset cost breakdown [EUR]",
             ]
             high_level_kpis_wh = [
-                "Energy production [Wh]",
+                "Energy production [Wh] (year 1)",
             ]
             all_high_level_kpis = []
             all_high_level_kpis = high_level_kpis_euro + high_level_kpis_wh
@@ -92,6 +95,50 @@ class TestUpdatedESDL(TestCase):
             np.testing.assert_allclose(
                 len(energy_system.instance[0].area.KPIs.kpi), number_of_kpis_top_level_in_esdl
             )
+            np.testing.assert_allclose(
+                len(energy_system.instance[0].area.KPIs.kpi), len(all_high_level_kpis)
+            )
+
+            # Assign kpi info that has to be used for comapiring lifetime vs yearly values
+            # kpi_name_list and kpi_label_list should be the same length and the same order
+            compare_yearly_lifetime_kpis = {
+                # lists of 2 kpis that have to be compared
+                "kpi_name_list": [
+                    [
+                        "High level cost breakdown [EUR] (year 1)",
+                        "High level cost breakdown [EUR] (lifetime)",
+                    ],
+                    [
+                        "Overall cost breakdown [EUR] (year 1)",
+                        "Overall cost breakdown [EUR] (lifetime)",
+                    ],
+                    [
+                        "Overall cost breakdown [EUR] (year 1)",
+                        "Overall cost breakdown [EUR] (lifetime)",
+                    ],
+                    [
+                        "OPEX breakdown [EUR] (year 1)",
+                        "OPEX breakdown [EUR] (lifetime)",
+                    ],
+                ],
+                # lists of which kpi label that has to be compared or kpi_name_list
+                "kpi_label_list": [
+                    ["OPEX"],
+                    ["Variable OPEX"],
+                    ["Fixed OPEX"],
+                    ["ResidualHeatSource"],
+                ],
+                "index_high_level_cost_list": [],  # leave this empty, this list length is set below
+            }
+            for _ in range(len(compare_yearly_lifetime_kpis["kpi_name_list"])):
+                compare_yearly_lifetime_kpis["index_high_level_cost_list"].append([])
+            if (
+                len(compare_yearly_lifetime_kpis["kpi_name_list"])
+                != len(compare_yearly_lifetime_kpis["kpi_label_list"])
+            ):
+                print("List should be the same length")
+                exit(1)
+
             for ii in range(len(energy_system.instance[0].area.KPIs.kpi)):
                 kpi_name = energy_system.instance[0].area.KPIs.kpi[ii].name
                 np.testing.assert_array_equal(
@@ -111,6 +158,41 @@ class TestUpdatedESDL(TestCase):
                     )
                 else:
                     exit(f"Unexpected KPI name: {kpi_name}")
+
+                # Check lifetime vs yearly cost when the lifetime value is 30 years
+                for il in range(len(compare_yearly_lifetime_kpis["kpi_name_list"])):
+
+                    if (
+                        # kpi_name in [
+                        #     "High level cost breakdown [EUR] (year 1)",
+                        #     "High level cost breakdown [EUR] (lifetime)",
+                        # ]
+                        kpi_name in compare_yearly_lifetime_kpis["kpi_name_list"][il]
+                    ):
+                        compare_yearly_lifetime_kpis["index_high_level_cost_list"][il].append(ii)
+                        if len(compare_yearly_lifetime_kpis["index_high_level_cost_list"][il]) == 2:
+                            for iitem in range(
+                                len(
+                                    energy_system.instance[0].area.KPIs.kpi[
+                                    ii].distribution.stringItem.items
+                                )
+                            ):
+                                if energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][0]].distribution.stringItem.items[iitem].label in compare_yearly_lifetime_kpis["kpi_label_list"][il]:
+                            
+                                    max_value = max(
+                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][0]].distribution.stringItem.items[iitem].value,
+                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][1]].distribution.stringItem.items[iitem].value
+                                    )
+                                    min_value = min(
+                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][0]].distribution.stringItem.items[iitem].value,
+                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][1]].distribution.stringItem.items[iitem].value
+                                    )
+                                    np.testing.assert_allclose(min_value * 30.0, max_value)
+            # make ssure that all the items in kpi_name_list was checked
+            for il in range(len(compare_yearly_lifetime_kpis["kpi_name_list"])):
+                np.testing.assert_equal(
+                    len(compare_yearly_lifetime_kpis["index_high_level_cost_list"][il]), 2
+                )
 
             # Check the asset quantity
             number_of_assets_in_esdl = 15

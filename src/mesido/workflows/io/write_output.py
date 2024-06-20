@@ -321,11 +321,16 @@ class ScenarioOutput(TechnoEconomicMixin):
         kpis_top_level = esdl.KPIs(id=str(uuid.uuid4()))
         heat_source_energy_wh = {}
         asset_capex_breakdown = {}
-        asset_opex_breakdown = {}
+        asset_opex_breakdown = {}  # yearly cost
         tot_install_cost_euro = 0.0
         tot_invest_cost_euro = 0.0
-        tot_variable_opex_cost_euro = 0.0
-        tot_fixed_opex_cost_euro = 0.0
+        tot_variable_opex_cost_euro = 0.0  # yearly cost
+        tot_fixed_opex_cost_euro = 0.0  # yearly cost
+
+        # over entire lifetime costs
+        asset_lifetime_opex_breakdown = {}
+        tot_lifetime_variable_opex_cost_euro = 0.0
+        tot_lifetime_fixed_opex_cost_euro = 0.0
 
         for _key, asset in self.esdl_assets.items():
             asset_placement_var = self._asset_aggregation_count_var_map[asset.name]
@@ -347,6 +352,10 @@ class ScenarioOutput(TechnoEconomicMixin):
                             results[f"{asset.name}__variable_operational_cost"][0]
                             + results[f"{asset.name}__fixed_operational_cost"][0]
                         )
+                        asset_lifetime_opex_breakdown[asset.asset_type] += (
+                            results[f"{asset.name}__variable_operational_cost"][0]
+                            + results[f"{asset.name}__fixed_operational_cost"][0]
+                        ) * asset.attributes["technicalLifetime"]
 
                         tot_variable_opex_cost_euro += results[
                             f"{asset.name}__variable_operational_cost"
@@ -354,6 +363,12 @@ class ScenarioOutput(TechnoEconomicMixin):
                         tot_fixed_opex_cost_euro += results[
                             f"{asset.name}__fixed_operational_cost"
                         ][0]
+                        tot_lifetime_variable_opex_cost_euro += results[
+                            f"{asset.name}__variable_operational_cost"
+                        ][0] * asset.attributes["technicalLifetime"]
+                        tot_lifetime_fixed_opex_cost_euro += results[
+                            f"{asset.name}__fixed_operational_cost"
+                        ][0] * asset.attributes["technicalLifetime"]
 
                 except KeyError:
                     try:
@@ -372,6 +387,10 @@ class ScenarioOutput(TechnoEconomicMixin):
                                 results[f"{asset.name}__variable_operational_cost"][0]
                                 + results[f"{asset.name}__fixed_operational_cost"][0]
                             )
+                            asset_lifetime_opex_breakdown[asset.asset_type] = (
+                                asset_opex_breakdown[asset.asset_type]
+                                * asset.attributes["technicalLifetime"]
+                            )
 
                             tot_variable_opex_cost_euro += results[
                                 f"{asset.name}__variable_operational_cost"
@@ -379,6 +398,13 @@ class ScenarioOutput(TechnoEconomicMixin):
                             tot_fixed_opex_cost_euro += results[
                                 f"{asset.name}__fixed_operational_cost"
                             ][0]
+                            tot_lifetime_variable_opex_cost_euro += results[
+                                f"{asset.name}__variable_operational_cost"
+                            ][0] * asset.attributes["technicalLifetime"]
+                            tot_lifetime_fixed_opex_cost_euro += results[
+                                f"{asset.name}__fixed_operational_cost"
+                            ][0] * asset.attributes["technicalLifetime"]
+
                     except KeyError:
                         # Do not add any costs. Items like joint
                         pass
@@ -412,7 +438,7 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="High level cost breakdown [EUR]",
+                name="High level cost breakdown [EUR] (year 1)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(
@@ -430,16 +456,61 @@ class ScenarioOutput(TechnoEconomicMixin):
                 ),
             )
         )
+        kpis_top_level.kpi.append(
+            esdl.DistributionKPI(
+                name="High level cost breakdown [EUR] (lifetime)",
+                distribution=esdl.StringLabelDistribution(
+                    stringItem=[
+                        esdl.StringItem(
+                            label="CAPEX",
+                            value=tot_install_cost_euro + tot_invest_cost_euro,
+                        ),
+                        esdl.StringItem(
+                            label="OPEX",
+                            value=(
+                                tot_lifetime_variable_opex_cost_euro
+                                + tot_lifetime_fixed_opex_cost_euro
+                            ),
+                        ),
+                    ]
+                ),
+                quantityAndUnit=esdl.esdl.QuantityAndUnitType(
+                    physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
+                ),
+            )
+        )
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="Overall cost breakdown [EUR]",
+                name="Overall cost breakdown [EUR] (year 1)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(label="Installation", value=tot_install_cost_euro),
                         esdl.StringItem(label="Investment", value=tot_invest_cost_euro),
                         esdl.StringItem(label="Variable OPEX", value=tot_variable_opex_cost_euro),
                         esdl.StringItem(label="Fixed OPEX", value=tot_fixed_opex_cost_euro),
+                    ]
+                ),
+                quantityAndUnit=esdl.esdl.QuantityAndUnitType(
+                    physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
+                ),
+            )
+        )
+        kpis_top_level.kpi.append(
+            esdl.DistributionKPI(
+                name="Overall cost breakdown [EUR] (lifetime)",
+                distribution=esdl.StringLabelDistribution(
+                    stringItem=[
+                        esdl.StringItem(label="Installation", value=tot_install_cost_euro),
+                        esdl.StringItem(label="Investment", value=tot_invest_cost_euro),
+                        esdl.StringItem(
+                            label="Variable OPEX",
+                            value=tot_lifetime_variable_opex_cost_euro,
+                        ),
+                        esdl.StringItem(
+                            label="Fixed OPEX",
+                            value=tot_lifetime_fixed_opex_cost_euro,
+                        ),
                     ]
                 ),
                 quantityAndUnit=esdl.esdl.QuantityAndUnitType(
@@ -465,7 +536,7 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="OPEX breakdown [EUR]",
+                name="OPEX breakdown [EUR] (year 1)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(label=key, value=value)
@@ -477,10 +548,24 @@ class ScenarioOutput(TechnoEconomicMixin):
                 ),
             )
         )
+        kpis_top_level.kpi.append(
+            esdl.DistributionKPI(
+                name="OPEX breakdown [EUR] (lifetime)",
+                distribution=esdl.StringLabelDistribution(
+                    stringItem=[
+                        esdl.StringItem(label=key, value=value)
+                        for key, value in asset_lifetime_opex_breakdown.items()
+                    ]
+                ),
+                quantityAndUnit=esdl.esdl.QuantityAndUnitType(
+                    physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
+                ),
+            )
+        )
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="Energy production [Wh]",
+                name="Energy production [Wh] (year 1)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(label=key, value=value)
@@ -606,22 +691,37 @@ class ScenarioOutput(TechnoEconomicMixin):
 
             # Calculate the estimated energy source [%] for an area
             try:
-                total_energy_produced_locally_wh_area = total_energy_produced_locally_wh[
-                    subarea.name
-                ]
+                if not np.isnan(total_energy_produced_locally_wh[subarea.name]):
+                    total_energy_produced_locally_wh_area = total_energy_produced_locally_wh[
+                        subarea.name
+                    ]
+                else:
+                    total_energy_produced_locally_wh_area = 0.0
             except KeyError:
                 total_energy_produced_locally_wh_area = 0.0
 
             try:
-                estimated_energy_from_local_source_perc[subarea.name] = min(
-                    total_energy_produced_locally_wh_area
-                    / total_energy_consumed_locally_wh[subarea.name]
-                    * 100.0,
-                    100.0,
-                )
-                estimated_energy_from_regional_source_perc[subarea.name] = min(
-                    (100.0 - estimated_energy_from_local_source_perc[subarea.name]), 100.0
-                )
+                if (
+                    not np.isnan(total_energy_consumed_locally_wh[subarea.name])
+                    and np.isclose(total_energy_consumed_locally_wh[subarea.name], 0.0)
+                ):
+                    estimated_energy_from_local_source_perc[subarea.name] = min(
+                        total_energy_produced_locally_wh_area
+                        / total_energy_consumed_locally_wh[subarea.name]
+                        * 100.0,
+                        100.0,
+                    )
+                    estimated_energy_from_regional_source_perc[subarea.name] = min(
+                        (100.0 - estimated_energy_from_local_source_perc[subarea.name]), 100.0
+                    )
+                else:
+                    estimated_energy_from_local_source_perc[subarea.name] = 0.0
+                    estimated_energy_from_regional_source_perc[subarea.name] = 0.0
+                    logger.warning(
+                        f"KPI estimated energy from local & regional source have been set to 0.0"
+                        f" in area {subarea.name}. Reason: area local energy"
+                        f" consumption value is: {total_energy_consumed_locally_wh[subarea.name]}"
+                    )
             except KeyError:
                 # Nothing to do, go on to next section of code
                 pass
@@ -659,7 +759,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                 kpis.kpi.append(
                     esdl.DoubleKPI(
                         value=area_variable_opex_cost / 1.0e6,
-                        name="Variable OPEX",
+                        name="Variable OPEX (year 1)",
                         quantityAndUnit=esdl.esdl.QuantityAndUnitType(
                             physicalQuantity=esdl.PhysicalQuantityEnum.COST,
                             unit=esdl.UnitEnum.EURO,
@@ -670,7 +770,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                 kpis.kpi.append(
                     esdl.DoubleKPI(
                         value=area_fixed_opex_cost / 1.0e6,
-                        name="Fixed OPEX",
+                        name="Fixed OPEX (year 1)",
                         quantityAndUnit=esdl.esdl.QuantityAndUnitType(
                             physicalQuantity=esdl.PhysicalQuantityEnum.COST,
                             unit=esdl.UnitEnum.EURO,
