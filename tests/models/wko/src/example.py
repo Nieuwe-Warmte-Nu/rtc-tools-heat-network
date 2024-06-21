@@ -169,17 +169,10 @@ class HeatProblem(
         The appended list of goals
         """
         goals = super().path_goals().copy()
+        self.energy_system_components["heat_source"]
 
-        try:
-            self.energy_system_components["heat_source"]
-
-            for s in self.energy_system_components["heat_source"]:
-                goals.append(MinimizeSourcesHeatGoal(s))
-        except KeyError:
-            ...
-        except Exception:
-            traceback.print_exc()
-            sys.exit(1)
+        for s in self.energy_system_components["heat_source"]:
+            goals.append(MinimizeSourcesHeatGoal(s))
 
         return goals
 
