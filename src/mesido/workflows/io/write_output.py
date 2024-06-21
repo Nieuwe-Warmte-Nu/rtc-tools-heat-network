@@ -363,12 +363,14 @@ class ScenarioOutput(TechnoEconomicMixin):
                         tot_fixed_opex_cost_euro += results[
                             f"{asset.name}__fixed_operational_cost"
                         ][0]
-                        tot_lifetime_variable_opex_cost_euro += results[
-                            f"{asset.name}__variable_operational_cost"
-                        ][0] * asset.attributes["technicalLifetime"]
-                        tot_lifetime_fixed_opex_cost_euro += results[
-                            f"{asset.name}__fixed_operational_cost"
-                        ][0] * asset.attributes["technicalLifetime"]
+                        tot_lifetime_variable_opex_cost_euro += (
+                            results[f"{asset.name}__variable_operational_cost"][0]
+                            * asset.attributes["technicalLifetime"]
+                        )
+                        tot_lifetime_fixed_opex_cost_euro += (
+                            results[f"{asset.name}__fixed_operational_cost"][0]
+                            * asset.attributes["technicalLifetime"]
+                        )
 
                 except KeyError:
                     try:
@@ -398,12 +400,14 @@ class ScenarioOutput(TechnoEconomicMixin):
                             tot_fixed_opex_cost_euro += results[
                                 f"{asset.name}__fixed_operational_cost"
                             ][0]
-                            tot_lifetime_variable_opex_cost_euro += results[
-                                f"{asset.name}__variable_operational_cost"
-                            ][0] * asset.attributes["technicalLifetime"]
-                            tot_lifetime_fixed_opex_cost_euro += results[
-                                f"{asset.name}__fixed_operational_cost"
-                            ][0] * asset.attributes["technicalLifetime"]
+                            tot_lifetime_variable_opex_cost_euro += (
+                                results[f"{asset.name}__variable_operational_cost"][0]
+                                * asset.attributes["technicalLifetime"]
+                            )
+                            tot_lifetime_fixed_opex_cost_euro += (
+                                results[f"{asset.name}__fixed_operational_cost"][0]
+                                * asset.attributes["technicalLifetime"]
+                            )
 
                     except KeyError:
                         # Do not add any costs. Items like joint
@@ -701,9 +705,8 @@ class ScenarioOutput(TechnoEconomicMixin):
                 total_energy_produced_locally_wh_area = 0.0
 
             try:
-                if (
-                    not np.isnan(total_energy_consumed_locally_wh[subarea.name])
-                    and np.isclose(total_energy_consumed_locally_wh[subarea.name], 0.0)
+                if not np.isnan(total_energy_consumed_locally_wh[subarea.name]) and np.isclose(
+                    total_energy_consumed_locally_wh[subarea.name], 0.0
                 ):
                     estimated_energy_from_local_source_perc[subarea.name] = min(
                         total_energy_produced_locally_wh_area

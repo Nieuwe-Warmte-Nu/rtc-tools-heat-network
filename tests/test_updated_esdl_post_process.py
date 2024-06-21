@@ -99,8 +99,9 @@ class TestUpdatedESDL(TestCase):
                 len(energy_system.instance[0].area.KPIs.kpi), len(all_high_level_kpis)
             )
 
-            # Assign kpi info that has to be used for comapiring lifetime vs yearly values
-            # kpi_name_list and kpi_label_list should be the same length and the same order
+            # Assign kpi info that has to be used for compairing lifetime vs yearly values
+            # kpi_name_list and kpi_label_list should be the same length and in the same order of
+            # which the comparison is done
             compare_yearly_lifetime_kpis = {
                 # lists of 2 kpis that have to be compared
                 "kpi_name_list": [
@@ -121,7 +122,7 @@ class TestUpdatedESDL(TestCase):
                         "OPEX breakdown [EUR] (lifetime)",
                     ],
                 ],
-                # lists of which kpi label that has to be compared or kpi_name_list
+                # lists of which kpi label has to be compared for kpi_name_list
                 "kpi_label_list": [
                     ["OPEX"],
                     ["Variable OPEX"],
@@ -132,9 +133,8 @@ class TestUpdatedESDL(TestCase):
             }
             for _ in range(len(compare_yearly_lifetime_kpis["kpi_name_list"])):
                 compare_yearly_lifetime_kpis["index_high_level_cost_list"].append([])
-            if (
-                len(compare_yearly_lifetime_kpis["kpi_name_list"])
-                != len(compare_yearly_lifetime_kpis["kpi_label_list"])
+            if len(compare_yearly_lifetime_kpis["kpi_name_list"]) != len(
+                compare_yearly_lifetime_kpis["kpi_label_list"]
             ):
                 print("List should be the same length")
                 exit(1)
@@ -162,30 +162,63 @@ class TestUpdatedESDL(TestCase):
                 # Check lifetime vs yearly cost when the lifetime value is 30 years
                 for il in range(len(compare_yearly_lifetime_kpis["kpi_name_list"])):
 
-                    if (
-                        # kpi_name in [
-                        #     "High level cost breakdown [EUR] (year 1)",
-                        #     "High level cost breakdown [EUR] (lifetime)",
-                        # ]
-                        kpi_name in compare_yearly_lifetime_kpis["kpi_name_list"][il]
-                    ):
+                    if kpi_name in compare_yearly_lifetime_kpis["kpi_name_list"][il]:
                         compare_yearly_lifetime_kpis["index_high_level_cost_list"][il].append(ii)
                         if len(compare_yearly_lifetime_kpis["index_high_level_cost_list"][il]) == 2:
                             for iitem in range(
                                 len(
-                                    energy_system.instance[0].area.KPIs.kpi[
-                                    ii].distribution.stringItem.items
+                                    energy_system.instance[0]
+                                    .area.KPIs.kpi[ii]
+                                    .distribution.stringItem.items
                                 )
                             ):
-                                if energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][0]].distribution.stringItem.items[iitem].label in compare_yearly_lifetime_kpis["kpi_label_list"][il]:
-                            
+                                if (
+                                    energy_system.instance[0]
+                                    .area.KPIs.kpi[
+                                        compare_yearly_lifetime_kpis["index_high_level_cost_list"][
+                                            il
+                                        ][0]
+                                    ]
+                                    .distribution.stringItem.items[iitem]
+                                    .label
+                                    in compare_yearly_lifetime_kpis["kpi_label_list"][il]
+                                ):
+
                                     max_value = max(
-                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][0]].distribution.stringItem.items[iitem].value,
-                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][1]].distribution.stringItem.items[iitem].value
+                                        energy_system.instance[0]
+                                        .area.KPIs.kpi[
+                                            compare_yearly_lifetime_kpis[
+                                                "index_high_level_cost_list"
+                                            ][il][0]
+                                        ]
+                                        .distribution.stringItem.items[iitem]
+                                        .value,
+                                        energy_system.instance[0]
+                                        .area.KPIs.kpi[
+                                            compare_yearly_lifetime_kpis[
+                                                "index_high_level_cost_list"
+                                            ][il][1]
+                                        ]
+                                        .distribution.stringItem.items[iitem]
+                                        .value,
                                     )
                                     min_value = min(
-                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][0]].distribution.stringItem.items[iitem].value,
-                                        energy_system.instance[0].area.KPIs.kpi[compare_yearly_lifetime_kpis["index_high_level_cost_list"][il][1]].distribution.stringItem.items[iitem].value
+                                        energy_system.instance[0]
+                                        .area.KPIs.kpi[
+                                            compare_yearly_lifetime_kpis[
+                                                "index_high_level_cost_list"
+                                            ][il][0]
+                                        ]
+                                        .distribution.stringItem.items[iitem]
+                                        .value,
+                                        energy_system.instance[0]
+                                        .area.KPIs.kpi[
+                                            compare_yearly_lifetime_kpis[
+                                                "index_high_level_cost_list"
+                                            ][il][1]
+                                        ]
+                                        .distribution.stringItem.items[iitem]
+                                        .value,
                                     )
                                     np.testing.assert_allclose(min_value * 30.0, max_value)
             # make ssure that all the items in kpi_name_list was checked
