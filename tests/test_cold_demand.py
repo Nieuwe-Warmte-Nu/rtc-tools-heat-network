@@ -135,11 +135,15 @@ class TestColdDemand(TestCase):
                 # for ates_id in self.energy_system_components.get("low_temperature_ates", []):
                 #     stored_volume = self.state_vector(f"{ates_id}.Stored_volume")
                 #     volume_usage = 0.0
-                #     for itstep in range(len(self.times()) - 1):
-                #         volume_usage = (
-                #             volume_usage + stored_volume[itstep + 1] - stored_volume[itstep]
-                #         )
+
+                #     volume_usage = stored_volume[0] - stored_volume[-1]
                 #     constraints.append((volume_usage, 0.0, 0.0))
+
+                    # for itstep in range(len(self.times()) - 1):
+                    #     volume_usage = (
+                    #         volume_usage + stored_volume[itstep + 1] - stored_volume[itstep]
+                    #     )
+                    # constraints.append((volume_usage, 0.0, 0.0))
 
                 return constraints
 
