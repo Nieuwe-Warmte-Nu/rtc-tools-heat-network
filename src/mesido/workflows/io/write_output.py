@@ -344,8 +344,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                 capex_factor = 1.0
             else:
                 capex_factor = math.ceil(
-                    parameters["number_of_years"]
-                    / parameters[f"{asset.name}.technical_life"]
+                    parameters["number_of_years"] / parameters[f"{asset.name}.technical_life"]
                 )
 
             if placed:
@@ -469,9 +468,9 @@ class ScenarioOutput(TechnoEconomicMixin):
                         esdl.StringItem(
                             label="CAPEX",
                             value=(
-                                tot_timehorizon_install_cost_euro
-                                + tot_timehorizon_invest_cost_euro
-                            ) / parameters["number_of_years"],
+                                tot_timehorizon_install_cost_euro + tot_timehorizon_invest_cost_euro
+                            )
+                            / parameters["number_of_years"],
                         ),
                         esdl.StringItem(
                             label="OPEX",
@@ -492,7 +491,8 @@ class ScenarioOutput(TechnoEconomicMixin):
                     stringItem=[
                         esdl.StringItem(
                             label="CAPEX",
-                            value=tot_timehorizon_install_cost_euro + tot_timehorizon_invest_cost_euro,
+                            value=tot_timehorizon_install_cost_euro
+                            + tot_timehorizon_invest_cost_euro,
                         ),
                         esdl.StringItem(
                             label="OPEX",
@@ -514,10 +514,18 @@ class ScenarioOutput(TechnoEconomicMixin):
                 name="Overall cost breakdown [EUR] (yearly averaged)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
-                        esdl.StringItem(label="Installation", value=(tot_timehorizon_install_cost_euro
-                                        / parameters["number_of_years"])),
-                        esdl.StringItem(label="Investment", value=(tot_timehorizon_invest_cost_euro
-                                        / parameters["number_of_years"])),
+                        esdl.StringItem(
+                            label="Installation",
+                            value=(
+                                tot_timehorizon_install_cost_euro / parameters["number_of_years"]
+                            ),
+                        ),
+                        esdl.StringItem(
+                            label="Investment",
+                            value=(
+                                tot_timehorizon_invest_cost_euro / parameters["number_of_years"]
+                            ),
+                        ),
                         esdl.StringItem(label="Variable OPEX", value=tot_variable_opex_cost_euro),
                         esdl.StringItem(label="Fixed OPEX", value=tot_fixed_opex_cost_euro),
                     ]
@@ -532,7 +540,9 @@ class ScenarioOutput(TechnoEconomicMixin):
                 name=f"Overall cost breakdown [EUR] ({optim_time_horizon} year period)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
-                        esdl.StringItem(label="Installation", value=tot_timehorizon_install_cost_euro),
+                        esdl.StringItem(
+                            label="Installation", value=tot_timehorizon_install_cost_euro
+                        ),
                         esdl.StringItem(label="Investment", value=tot_timehorizon_invest_cost_euro),
                         esdl.StringItem(
                             label="Variable OPEX",
