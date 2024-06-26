@@ -382,8 +382,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                             * optim_time_horizon
                         )
                         tot_timehorizon_fixed_opex_cost_euro += (
-                            results[f"{asset.name}__fixed_operational_cost"][0]
-                            * optim_time_horizon
+                            results[f"{asset.name}__fixed_operational_cost"][0] * optim_time_horizon
                         )
 
                 except KeyError:
@@ -408,8 +407,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                                 + results[f"{asset.name}__fixed_operational_cost"][0]
                             )
                             asset_timehorizon_opex_breakdown[asset.asset_type] = (
-                                asset_opex_breakdown[asset.asset_type]
-                                * optim_time_horizon
+                                asset_opex_breakdown[asset.asset_type] * optim_time_horizon
                             )
 
                             tot_variable_opex_cost_euro += results[
@@ -515,15 +513,11 @@ class ScenarioOutput(TechnoEconomicMixin):
                     stringItem=[
                         esdl.StringItem(
                             label="Installation",
-                            value=(
-                                tot_timehorizon_install_cost_euro / optim_time_horizon
-                            ),
+                            value=(tot_timehorizon_install_cost_euro / optim_time_horizon),
                         ),
                         esdl.StringItem(
                             label="Investment",
-                            value=(
-                                tot_timehorizon_invest_cost_euro / optim_time_horizon
-                            ),
+                            value=(tot_timehorizon_invest_cost_euro / optim_time_horizon),
                         ),
                         esdl.StringItem(label="Variable OPEX", value=tot_variable_opex_cost_euro),
                         esdl.StringItem(label="Fixed OPEX", value=tot_fixed_opex_cost_euro),
@@ -921,7 +915,7 @@ class ScenarioOutput(TechnoEconomicMixin):
         # end KPIs
 
     def _write_updated_esdl(
-            self, energy_system, optimizer_sim: bool = False, add_kpis: bool = True
+        self, energy_system, optimizer_sim: bool = False, add_kpis: bool = True
     ):
         from esdl.esdl_handler import EnergySystemHandler
 
