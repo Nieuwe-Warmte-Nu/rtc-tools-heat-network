@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import math
 import numbers
 import os
 import sys
@@ -320,29 +321,45 @@ class ScenarioOutput(TechnoEconomicMixin):
         # ------------------------------------------------------------------------------------------
         kpis_top_level = esdl.KPIs(id=str(uuid.uuid4()))
         heat_source_energy_wh = {}
-        asset_capex_breakdown = {}
         asset_opex_breakdown = {}  # yearly cost
-        tot_install_cost_euro = 0.0
-        tot_invest_cost_euro = 0.0
         tot_variable_opex_cost_euro = 0.0  # yearly cost
         tot_fixed_opex_cost_euro = 0.0  # yearly cost
 
-        # over entire lifetime costs
-        asset_lifetime_opex_breakdown = {}
-        tot_lifetime_variable_opex_cost_euro = 0.0
-        tot_lifetime_fixed_opex_cost_euro = 0.0
+        # cost over the total time horizon (number of year) being optimized:
+        #   parameters["number_of_years"]
+        asset_timehorizon_opex_breakdown = {}
+        tot_timehorizon_variable_opex_cost_euro = 0.0
+        tot_timehorizon_fixed_opex_cost_euro = 0.0
+        asset_timehorizon_capex_breakdown = {}
+        tot_timehorizon_install_cost_euro = 0.0
+        tot_timehorizon_invest_cost_euro = 0.0
 
         for _key, asset in self.esdl_assets.items():
             asset_placement_var = self._asset_aggregation_count_var_map[asset.name]
             placed = np.round(results[asset_placement_var][0]) >= 1.0
+
+            if np.isnan(parameters[f"{asset.name}.technical_life"]) or np.isclose(
+                parameters[f"{asset.name}.technical_life"], 0.0
+            ):
+                capex_factor = 1.0
+            else:
+                capex_factor = math.ceil(
+                    parameters["number_of_years"]
+                    / parameters[f"{asset.name}.technical_life"]
+                )
+
             if placed:
                 try:
-                    asset_capex_breakdown[asset.asset_type] += (
+                    asset_timehorizon_capex_breakdown[asset.asset_type] += (
                         results[f"{asset.name}__installation_cost"][0]
                         + results[f"{asset.name}__investment_cost"][0]
-                    )
-                    tot_install_cost_euro += results[f"{asset.name}__installation_cost"][0]
-                    tot_invest_cost_euro += results[f"{asset.name}__investment_cost"][0]
+                    ) * capex_factor
+                    tot_timehorizon_install_cost_euro += (
+                        results[f"{asset.name}__installation_cost"][0]
+                    ) * capex_factor
+                    tot_timehorizon_invest_cost_euro += (
+                        results[f"{asset.name}__investment_cost"][0]
+                    ) * capex_factor
 
                     if (
                         results[f"{asset.name}__variable_operational_cost"][0] > 0.0
@@ -352,10 +369,10 @@ class ScenarioOutput(TechnoEconomicMixin):
                             results[f"{asset.name}__variable_operational_cost"][0]
                             + results[f"{asset.name}__fixed_operational_cost"][0]
                         )
-                        asset_lifetime_opex_breakdown[asset.asset_type] += (
+                        asset_timehorizon_opex_breakdown[asset.asset_type] += (
                             results[f"{asset.name}__variable_operational_cost"][0]
                             + results[f"{asset.name}__fixed_operational_cost"][0]
-                        ) * asset.attributes["technicalLifetime"]
+                        ) * parameters["number_of_years"]
 
                         tot_variable_opex_cost_euro += results[
                             f"{asset.name}__variable_operational_cost"
@@ -363,23 +380,27 @@ class ScenarioOutput(TechnoEconomicMixin):
                         tot_fixed_opex_cost_euro += results[
                             f"{asset.name}__fixed_operational_cost"
                         ][0]
-                        tot_lifetime_variable_opex_cost_euro += (
+                        tot_timehorizon_variable_opex_cost_euro += (
                             results[f"{asset.name}__variable_operational_cost"][0]
-                            * asset.attributes["technicalLifetime"]
+                            * parameters["number_of_years"]
                         )
-                        tot_lifetime_fixed_opex_cost_euro += (
+                        tot_timehorizon_fixed_opex_cost_euro += (
                             results[f"{asset.name}__fixed_operational_cost"][0]
-                            * asset.attributes["technicalLifetime"]
+                            * parameters["number_of_years"]
                         )
 
                 except KeyError:
                     try:
-                        asset_capex_breakdown[asset.asset_type] = (
+                        asset_timehorizon_capex_breakdown[asset.asset_type] = (
                             results[f"{asset.name}__installation_cost"][0]
                             + results[f"{asset.name}__investment_cost"][0]
-                        )
-                        tot_install_cost_euro += results[f"{asset.name}__installation_cost"][0]
-                        tot_invest_cost_euro += results[f"{asset.name}__investment_cost"][0]
+                        ) * capex_factor
+                        tot_timehorizon_install_cost_euro += (
+                            results[f"{asset.name}__installation_cost"][0]
+                        ) * capex_factor
+                        tot_timehorizon_invest_cost_euro += (
+                            results[f"{asset.name}__investment_cost"][0]
+                        ) * capex_factor
 
                         if (
                             results[f"{asset.name}__variable_operational_cost"][0] > 0.0
@@ -389,9 +410,9 @@ class ScenarioOutput(TechnoEconomicMixin):
                                 results[f"{asset.name}__variable_operational_cost"][0]
                                 + results[f"{asset.name}__fixed_operational_cost"][0]
                             )
-                            asset_lifetime_opex_breakdown[asset.asset_type] = (
+                            asset_timehorizon_opex_breakdown[asset.asset_type] = (
                                 asset_opex_breakdown[asset.asset_type]
-                                * asset.attributes["technicalLifetime"]
+                                * parameters["number_of_years"]
                             )
 
                             tot_variable_opex_cost_euro += results[
@@ -400,13 +421,13 @@ class ScenarioOutput(TechnoEconomicMixin):
                             tot_fixed_opex_cost_euro += results[
                                 f"{asset.name}__fixed_operational_cost"
                             ][0]
-                            tot_lifetime_variable_opex_cost_euro += (
+                            tot_timehorizon_variable_opex_cost_euro += (
                                 results[f"{asset.name}__variable_operational_cost"][0]
-                                * asset.attributes["technicalLifetime"]
+                                * parameters["number_of_years"]
                             )
-                            tot_lifetime_fixed_opex_cost_euro += (
+                            tot_timehorizon_fixed_opex_cost_euro += (
                                 results[f"{asset.name}__fixed_operational_cost"][0]
-                                * asset.attributes["technicalLifetime"]
+                                * parameters["number_of_years"]
                             )
 
                     except KeyError:
@@ -442,12 +463,15 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="High level cost breakdown [EUR] (year 1)",
+                name="High level cost breakdown [EUR] (yearly averaged)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(
                             label="CAPEX",
-                            value=tot_install_cost_euro + tot_invest_cost_euro,
+                            value=(
+                                tot_timehorizon_install_cost_euro
+                                + tot_timehorizon_invest_cost_euro
+                            ) / parameters["number_of_years"],
                         ),
                         esdl.StringItem(
                             label="OPEX",
@@ -460,20 +484,21 @@ class ScenarioOutput(TechnoEconomicMixin):
                 ),
             )
         )
+        optim_time_horizon = parameters["number_of_years"]
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="High level cost breakdown [EUR] (lifetime)",
+                name=f"High level cost breakdown [EUR] ({optim_time_horizon} year period)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(
                             label="CAPEX",
-                            value=tot_install_cost_euro + tot_invest_cost_euro,
+                            value=tot_timehorizon_install_cost_euro + tot_timehorizon_invest_cost_euro,
                         ),
                         esdl.StringItem(
                             label="OPEX",
                             value=(
-                                tot_lifetime_variable_opex_cost_euro
-                                + tot_lifetime_fixed_opex_cost_euro
+                                tot_timehorizon_variable_opex_cost_euro
+                                + tot_timehorizon_fixed_opex_cost_euro
                             ),
                         ),
                     ]
@@ -486,11 +511,13 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="Overall cost breakdown [EUR] (year 1)",
+                name="Overall cost breakdown [EUR] (yearly averaged)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
-                        esdl.StringItem(label="Installation", value=tot_install_cost_euro),
-                        esdl.StringItem(label="Investment", value=tot_invest_cost_euro),
+                        esdl.StringItem(label="Installation", value=(tot_timehorizon_install_cost_euro
+                                        / parameters["number_of_years"])),
+                        esdl.StringItem(label="Investment", value=(tot_timehorizon_invest_cost_euro
+                                        / parameters["number_of_years"])),
                         esdl.StringItem(label="Variable OPEX", value=tot_variable_opex_cost_euro),
                         esdl.StringItem(label="Fixed OPEX", value=tot_fixed_opex_cost_euro),
                     ]
@@ -502,18 +529,18 @@ class ScenarioOutput(TechnoEconomicMixin):
         )
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="Overall cost breakdown [EUR] (lifetime)",
+                name=f"Overall cost breakdown [EUR] ({optim_time_horizon} year period)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
-                        esdl.StringItem(label="Installation", value=tot_install_cost_euro),
-                        esdl.StringItem(label="Investment", value=tot_invest_cost_euro),
+                        esdl.StringItem(label="Installation", value=tot_timehorizon_install_cost_euro),
+                        esdl.StringItem(label="Investment", value=tot_timehorizon_invest_cost_euro),
                         esdl.StringItem(
                             label="Variable OPEX",
-                            value=tot_lifetime_variable_opex_cost_euro,
+                            value=tot_timehorizon_variable_opex_cost_euro,
                         ),
                         esdl.StringItem(
                             label="Fixed OPEX",
-                            value=tot_lifetime_fixed_opex_cost_euro,
+                            value=tot_timehorizon_fixed_opex_cost_euro,
                         ),
                     ]
                 ),
@@ -525,11 +552,11 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="CAPEX breakdown [EUR]",
+                name=f"CAPEX breakdown [EUR] ({optim_time_horizon} year period)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(label=key, value=value)
-                        for key, value in asset_capex_breakdown.items()
+                        for key, value in asset_timehorizon_capex_breakdown.items()
                     ]
                 ),
                 quantityAndUnit=esdl.esdl.QuantityAndUnitType(
@@ -540,7 +567,7 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="OPEX breakdown [EUR] (year 1)",
+                name="OPEX breakdown [EUR] (yearly averaged)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(label=key, value=value)
@@ -554,11 +581,11 @@ class ScenarioOutput(TechnoEconomicMixin):
         )
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="OPEX breakdown [EUR] (lifetime)",
+                name=f"OPEX breakdown [EUR] ({optim_time_horizon} year period)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(label=key, value=value)
-                        for key, value in asset_lifetime_opex_breakdown.items()
+                        for key, value in asset_timehorizon_opex_breakdown.items()
                     ]
                 ),
                 quantityAndUnit=esdl.esdl.QuantityAndUnitType(
@@ -569,7 +596,7 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
-                name="Energy production [Wh] (year 1)",
+                name="Energy production [Wh] (yearly averaged)",
                 distribution=esdl.StringLabelDistribution(
                     stringItem=[
                         esdl.StringItem(label=key, value=value)

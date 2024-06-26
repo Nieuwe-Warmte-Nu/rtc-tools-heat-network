@@ -26,6 +26,8 @@ class TestUpdatedESDL(TestCase):
         Checks:
         - That the esdl saving method (direct ESDL file and ESDL string)
         - That the correct number of KPIs have been added
+        - Check that the OPEX costs for an asset with a 15 year lifetime == OPEX over optim time
+        horizon
         - That the correct assets have been removed
         - That all the assets have a state=ENABLED
         - The diameter of all the pipes are as expected
@@ -75,19 +77,19 @@ class TestUpdatedESDL(TestCase):
             # High level checks of KPIs
             number_of_kpis_top_level_in_esdl = 11
             high_level_kpis_euro = [
-                "High level cost breakdown [EUR] (year 1)",
-                "High level cost breakdown [EUR] (lifetime)",
-                "Overall cost breakdown [EUR] (year 1)",
-                "Overall cost breakdown [EUR] (lifetime)",
-                "CAPEX breakdown [EUR]",
-                "OPEX breakdown [EUR] (year 1)",
-                "OPEX breakdown [EUR] (lifetime)",
+                "High level cost breakdown [EUR] (yearly averaged)",
+                "High level cost breakdown [EUR] (30.0 year period)",
+                "Overall cost breakdown [EUR] (yearly averaged)",
+                "Overall cost breakdown [EUR] (30.0 year period)",
+                "CAPEX breakdown [EUR] (30.0 year period)",
+                "OPEX breakdown [EUR] (yearly averaged)",
+                "OPEX breakdown [EUR] (30.0 year period)",
                 "Area_76a7: Asset cost breakdown [EUR]",
                 "Area_9d0f: Asset cost breakdown [EUR]",
                 "Area_a58a: Asset cost breakdown [EUR]",
             ]
             high_level_kpis_wh = [
-                "Energy production [Wh] (year 1)",
+                "Energy production [Wh] (yearly averaged)",
             ]
             all_high_level_kpis = []
             all_high_level_kpis = high_level_kpis_euro + high_level_kpis_wh
@@ -99,27 +101,27 @@ class TestUpdatedESDL(TestCase):
                 len(energy_system.instance[0].area.KPIs.kpi), len(all_high_level_kpis)
             )
 
-            # Assign kpi info that has to be used for compairing lifetime vs yearly values
+            # Assign kpi info that has to be used for compairing optim time horizon vs yearly values
             # kpi_name_list and kpi_label_list should be the same length and in the same order of
             # which the comparison is done
             compare_yearly_lifetime_kpis = {
                 # lists of 2 kpis that have to be compared
                 "kpi_name_list": [
                     [
-                        "High level cost breakdown [EUR] (year 1)",
-                        "High level cost breakdown [EUR] (lifetime)",
+                        "High level cost breakdown [EUR] (yearly averaged)",
+                        "High level cost breakdown [EUR] (30.0 year period)",
                     ],
                     [
-                        "Overall cost breakdown [EUR] (year 1)",
-                        "Overall cost breakdown [EUR] (lifetime)",
+                        "Overall cost breakdown [EUR] (yearly averaged)",
+                        "Overall cost breakdown [EUR] (30.0 year period)",
                     ],
                     [
-                        "Overall cost breakdown [EUR] (year 1)",
-                        "Overall cost breakdown [EUR] (lifetime)",
+                        "Overall cost breakdown [EUR] (yearly averaged)",
+                        "Overall cost breakdown [EUR] (30.0 year period)",
                     ],
                     [
-                        "OPEX breakdown [EUR] (year 1)",
-                        "OPEX breakdown [EUR] (lifetime)",
+                        "OPEX breakdown [EUR] (yearly averaged)",
+                        "OPEX breakdown [EUR] (30.0 year period)",
                     ],
                 ],
                 # lists of which kpi label has to be compared for kpi_name_list
@@ -159,7 +161,8 @@ class TestUpdatedESDL(TestCase):
                 else:
                     exit(f"Unexpected KPI name: {kpi_name}")
 
-                # Check lifetime vs yearly cost when the lifetime value is 30 years
+                # Check optim time horizon vs yearly cost when the lifetime value is
+                # 15 years
                 for il in range(len(compare_yearly_lifetime_kpis["kpi_name_list"])):
 
                     if kpi_name in compare_yearly_lifetime_kpis["kpi_name_list"][il]:
@@ -220,7 +223,8 @@ class TestUpdatedESDL(TestCase):
                                         .distribution.stringItem.items[iitem]
                                         .value,
                                     )
-                                    np.testing.assert_allclose(min_value * 30.0, max_value)
+                                    # Lifetime of 15 years and the optim time horizon is 30 years
+                                    np.testing.assert_allclose(min_value * 15.0 * 2.0, max_value)
             # make ssure that all the items in kpi_name_list was checked
             for il in range(len(compare_yearly_lifetime_kpis["kpi_name_list"])):
                 np.testing.assert_equal(
