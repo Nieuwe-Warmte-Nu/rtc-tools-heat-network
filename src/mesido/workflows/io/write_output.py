@@ -297,23 +297,10 @@ class ScenarioOutput(TechnoEconomicMixin):
                 )
             )
 
-    def _write_updated_esdl(self, energy_system, optimizer_sim: bool = False):
-        from esdl.esdl_handler import EnergySystemHandler
+    def _add_kpis_to_energy_system(self, energy_system, optimizer_sim: bool = False):
 
         results = self.extract_results()
         parameters = self.parameters(0)
-
-        input_energy_system_id = energy_system.id
-        energy_system.id = str(uuid.uuid4())
-        if optimizer_sim:
-            energy_system.name = energy_system.name + "_Simulation"
-        else:
-            energy_system.name = energy_system.name + "_GrowOptimized"
-
-        def _name_to_asset(name):
-            return next(
-                (x for x in energy_system.eAllContents() if hasattr(x, "name") and x.name == name)
-            )
 
         # ------------------------------------------------------------------------------------------
         # KPIs
@@ -326,13 +313,24 @@ class ScenarioOutput(TechnoEconomicMixin):
         tot_fixed_opex_cost_euro = 0.0  # yearly cost
 
         # cost over the total time horizon (number of year) being optimized:
-        #   parameters["number_of_years"]
+        #   - parameters["number_of_years"]
+        #   - these kpis are not created for the newtwork simualtor->optimizer_sim
         asset_timehorizon_opex_breakdown = {}
         tot_timehorizon_variable_opex_cost_euro = 0.0
         tot_timehorizon_fixed_opex_cost_euro = 0.0
         asset_timehorizon_capex_breakdown = {}
         tot_timehorizon_install_cost_euro = 0.0
         tot_timehorizon_invest_cost_euro = 0.0
+
+        # Specify the correct time horizon:
+        # Optimization=number of year: since it is taken into account in TCO minimization
+        # Simulator=1: since 30 years of optimization is not applicable for the network simulator
+        if not optimizer_sim:  # optimization mode
+            optim_time_horizon = parameters["number_of_years"]
+        elif optimizer_sim:  # network simulator mode
+            optim_time_horizon = 1.0
+        else:
+            logger.error("Variable optimizer_sim has not been set")
 
         for _key, asset in self.esdl_assets.items():
             asset_placement_var = self._asset_aggregation_count_var_map[asset.name]
@@ -344,7 +342,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                 capex_factor = 1.0
             else:
                 capex_factor = math.ceil(
-                    parameters["number_of_years"] / parameters[f"{asset.name}.technical_life"]
+                    optim_time_horizon / parameters[f"{asset.name}.technical_life"]
                 )
 
             if placed:
@@ -371,7 +369,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                         asset_timehorizon_opex_breakdown[asset.asset_type] += (
                             results[f"{asset.name}__variable_operational_cost"][0]
                             + results[f"{asset.name}__fixed_operational_cost"][0]
-                        ) * parameters["number_of_years"]
+                        ) * optim_time_horizon
 
                         tot_variable_opex_cost_euro += results[
                             f"{asset.name}__variable_operational_cost"
@@ -381,11 +379,11 @@ class ScenarioOutput(TechnoEconomicMixin):
                         ][0]
                         tot_timehorizon_variable_opex_cost_euro += (
                             results[f"{asset.name}__variable_operational_cost"][0]
-                            * parameters["number_of_years"]
+                            * optim_time_horizon
                         )
                         tot_timehorizon_fixed_opex_cost_euro += (
                             results[f"{asset.name}__fixed_operational_cost"][0]
-                            * parameters["number_of_years"]
+                            * optim_time_horizon
                         )
 
                 except KeyError:
@@ -411,7 +409,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                             )
                             asset_timehorizon_opex_breakdown[asset.asset_type] = (
                                 asset_opex_breakdown[asset.asset_type]
-                                * parameters["number_of_years"]
+                                * optim_time_horizon
                             )
 
                             tot_variable_opex_cost_euro += results[
@@ -422,11 +420,11 @@ class ScenarioOutput(TechnoEconomicMixin):
                             ][0]
                             tot_timehorizon_variable_opex_cost_euro += (
                                 results[f"{asset.name}__variable_operational_cost"][0]
-                                * parameters["number_of_years"]
+                                * optim_time_horizon
                             )
                             tot_timehorizon_fixed_opex_cost_euro += (
                                 results[f"{asset.name}__fixed_operational_cost"][0]
-                                * parameters["number_of_years"]
+                                * optim_time_horizon
                             )
 
                     except KeyError:
@@ -470,7 +468,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                             value=(
                                 tot_timehorizon_install_cost_euro + tot_timehorizon_invest_cost_euro
                             )
-                            / parameters["number_of_years"],
+                            / optim_time_horizon,
                         ),
                         esdl.StringItem(
                             label="OPEX",
@@ -483,31 +481,32 @@ class ScenarioOutput(TechnoEconomicMixin):
                 ),
             )
         )
-        optim_time_horizon = parameters["number_of_years"]
-        kpis_top_level.kpi.append(
-            esdl.DistributionKPI(
-                name=f"High level cost breakdown [EUR] ({optim_time_horizon} year period)",
-                distribution=esdl.StringLabelDistribution(
-                    stringItem=[
-                        esdl.StringItem(
-                            label="CAPEX",
-                            value=tot_timehorizon_install_cost_euro
-                            + tot_timehorizon_invest_cost_euro,
-                        ),
-                        esdl.StringItem(
-                            label="OPEX",
-                            value=(
-                                tot_timehorizon_variable_opex_cost_euro
-                                + tot_timehorizon_fixed_opex_cost_euro
+
+        if not optimizer_sim:
+            kpis_top_level.kpi.append(
+                esdl.DistributionKPI(
+                    name=f"High level cost breakdown [EUR] ({optim_time_horizon} year period)",
+                    distribution=esdl.StringLabelDistribution(
+                        stringItem=[
+                            esdl.StringItem(
+                                label="CAPEX",
+                                value=tot_timehorizon_install_cost_euro
+                                + tot_timehorizon_invest_cost_euro,
                             ),
-                        ),
-                    ]
-                ),
-                quantityAndUnit=esdl.esdl.QuantityAndUnitType(
-                    physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
-                ),
+                            esdl.StringItem(
+                                label="OPEX",
+                                value=(
+                                    tot_timehorizon_variable_opex_cost_euro
+                                    + tot_timehorizon_fixed_opex_cost_euro
+                                ),
+                            ),
+                        ]
+                    ),
+                    quantityAndUnit=esdl.esdl.QuantityAndUnitType(
+                        physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
+                    ),
+                )
             )
-        )
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
@@ -517,13 +516,13 @@ class ScenarioOutput(TechnoEconomicMixin):
                         esdl.StringItem(
                             label="Installation",
                             value=(
-                                tot_timehorizon_install_cost_euro / parameters["number_of_years"]
+                                tot_timehorizon_install_cost_euro / optim_time_horizon
                             ),
                         ),
                         esdl.StringItem(
                             label="Investment",
                             value=(
-                                tot_timehorizon_invest_cost_euro / parameters["number_of_years"]
+                                tot_timehorizon_invest_cost_euro / optim_time_horizon
                             ),
                         ),
                         esdl.StringItem(label="Variable OPEX", value=tot_variable_opex_cost_euro),
@@ -535,45 +534,48 @@ class ScenarioOutput(TechnoEconomicMixin):
                 ),
             )
         )
-        kpis_top_level.kpi.append(
-            esdl.DistributionKPI(
-                name=f"Overall cost breakdown [EUR] ({optim_time_horizon} year period)",
-                distribution=esdl.StringLabelDistribution(
-                    stringItem=[
-                        esdl.StringItem(
-                            label="Installation", value=tot_timehorizon_install_cost_euro
-                        ),
-                        esdl.StringItem(label="Investment", value=tot_timehorizon_invest_cost_euro),
-                        esdl.StringItem(
-                            label="Variable OPEX",
-                            value=tot_timehorizon_variable_opex_cost_euro,
-                        ),
-                        esdl.StringItem(
-                            label="Fixed OPEX",
-                            value=tot_timehorizon_fixed_opex_cost_euro,
-                        ),
-                    ]
-                ),
-                quantityAndUnit=esdl.esdl.QuantityAndUnitType(
-                    physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
-                ),
+        if not optimizer_sim:
+            kpis_top_level.kpi.append(
+                esdl.DistributionKPI(
+                    name=f"Overall cost breakdown [EUR] ({optim_time_horizon} year period)",
+                    distribution=esdl.StringLabelDistribution(
+                        stringItem=[
+                            esdl.StringItem(
+                                label="Installation", value=tot_timehorizon_install_cost_euro
+                            ),
+                            esdl.StringItem(
+                                label="Investment", value=tot_timehorizon_invest_cost_euro
+                            ),
+                            esdl.StringItem(
+                                label="Variable OPEX",
+                                value=tot_timehorizon_variable_opex_cost_euro,
+                            ),
+                            esdl.StringItem(
+                                label="Fixed OPEX",
+                                value=tot_timehorizon_fixed_opex_cost_euro,
+                            ),
+                        ]
+                    ),
+                    quantityAndUnit=esdl.esdl.QuantityAndUnitType(
+                        physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
+                    ),
+                )
             )
-        )
 
-        kpis_top_level.kpi.append(
-            esdl.DistributionKPI(
-                name=f"CAPEX breakdown [EUR] ({optim_time_horizon} year period)",
-                distribution=esdl.StringLabelDistribution(
-                    stringItem=[
-                        esdl.StringItem(label=key, value=value)
-                        for key, value in asset_timehorizon_capex_breakdown.items()
-                    ]
-                ),
-                quantityAndUnit=esdl.esdl.QuantityAndUnitType(
-                    physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
-                ),
+            kpis_top_level.kpi.append(
+                esdl.DistributionKPI(
+                    name=f"CAPEX breakdown [EUR] ({optim_time_horizon} year period)",
+                    distribution=esdl.StringLabelDistribution(
+                        stringItem=[
+                            esdl.StringItem(label=key, value=value)
+                            for key, value in asset_timehorizon_capex_breakdown.items()
+                        ]
+                    ),
+                    quantityAndUnit=esdl.esdl.QuantityAndUnitType(
+                        physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
+                    ),
+                )
             )
-        )
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
@@ -589,20 +591,21 @@ class ScenarioOutput(TechnoEconomicMixin):
                 ),
             )
         )
-        kpis_top_level.kpi.append(
-            esdl.DistributionKPI(
-                name=f"OPEX breakdown [EUR] ({optim_time_horizon} year period)",
-                distribution=esdl.StringLabelDistribution(
-                    stringItem=[
-                        esdl.StringItem(label=key, value=value)
-                        for key, value in asset_timehorizon_opex_breakdown.items()
-                    ]
-                ),
-                quantityAndUnit=esdl.esdl.QuantityAndUnitType(
-                    physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
-                ),
+        if not optimizer_sim:
+            kpis_top_level.kpi.append(
+                esdl.DistributionKPI(
+                    name=f"OPEX breakdown [EUR] ({optim_time_horizon} year period)",
+                    distribution=esdl.StringLabelDistribution(
+                        stringItem=[
+                            esdl.StringItem(label=key, value=value)
+                            for key, value in asset_timehorizon_opex_breakdown.items()
+                        ]
+                    ),
+                    quantityAndUnit=esdl.esdl.QuantityAndUnitType(
+                        physicalQuantity=esdl.PhysicalQuantityEnum.COST, unit=esdl.UnitEnum.EURO
+                    ),
+                )
             )
-        )
 
         kpis_top_level.kpi.append(
             esdl.DistributionKPI(
@@ -916,6 +919,30 @@ class ScenarioOutput(TechnoEconomicMixin):
         # ebd sub-area loop
 
         # end KPIs
+
+    def _write_updated_esdl(
+            self, energy_system, optimizer_sim: bool = False, add_kpis: bool = True
+    ):
+        from esdl.esdl_handler import EnergySystemHandler
+
+        results = self.extract_results()
+        parameters = self.parameters(0)
+
+        input_energy_system_id = energy_system.id
+        energy_system.id = str(uuid.uuid4())
+        if optimizer_sim:  # network simulator
+            energy_system.name = energy_system.name + "_Simulation"
+        else:  # network optimization
+            energy_system.name = energy_system.name + "_GrowOptimized"
+
+        def _name_to_asset(name):
+            return next(
+                (x for x in energy_system.eAllContents() if hasattr(x, "name") and x.name == name)
+            )
+
+        if add_kpis:
+            self._add_kpis_to_energy_system(energy_system, optimizer_sim)
+
         # ------------------------------------------------------------------------------------------
         # Placement
         for _, attributes in self.esdl_assets.items():
