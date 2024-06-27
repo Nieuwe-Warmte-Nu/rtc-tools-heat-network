@@ -302,8 +302,14 @@ class ScenarioOutput(TechnoEconomicMixin):
         results = self.extract_results()
         parameters = self.parameters(0)
 
-        input_energy_system_id = energy_system.id
-        energy_system.id = str(uuid.uuid4())
+        _ = energy_system.id  # input energy system id. Kept here as not sure if still needed
+        energy_system.id = str(uuid.uuid4())  # output energy system id
+        output_energy_system_id = energy_system.id
+        # Currently the simulation_id is created here, but in the future this will probably move
+        # to account for 1 simulation/optimization/run potentialy generating more than 1 output
+        # energy system (ESDL)
+        simulation_id = str(uuid.uuid4())  # simulation (optimization/simulator etc) id
+
         if optimizer_sim:
             energy_system.name = energy_system.name + "_Simulation"
         else:
@@ -882,7 +888,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                 port=self.influxdb_port,
                 username=self.influxdb_username,
                 password=self.influxdb_password,
-                database=input_energy_system_id,
+                database=output_energy_system_id,
                 ssl=self.influxdb_ssl,
                 verify_ssl=self.influxdb_verify_ssl,
             )
@@ -1103,7 +1109,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                                         end_date_time = self.io.datetimes[-1]
 
                                     profile_attributes = esdl.InfluxDBProfile(
-                                        database=input_energy_system_id,
+                                        database=output_energy_system_id,
                                         measurement=asset_name,
                                         field=profiles.profile_header[-1],
                                         port=self.influxdb_port,
@@ -1193,7 +1199,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                         )
 
                         optim_simulation_tag = {
-                            "simulationRun": energy_system.id,
+                            "simulationRun": simulation_id,
                             "simulation_type": type(self).__name__,
                             "assetId": asset_id,
                             "assetName": asset_name,
