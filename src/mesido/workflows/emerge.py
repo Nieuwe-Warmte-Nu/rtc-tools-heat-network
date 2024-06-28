@@ -196,8 +196,9 @@ class EmergeWorkFlow(
         super().post()
 
         # Optimized ESDL
-        # TODO: this code still has be to updated to cater for other network types
-        # self._write_updated_esdl(self._ESDLMixin__energy_system_handler.energy_system)
+        self._write_updated_esdl(
+            self._ESDLMixin__energy_system_handler.energy_system, add_kpis=False
+        )
 
         self._save_json = False
 

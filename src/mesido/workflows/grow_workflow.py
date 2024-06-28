@@ -1,6 +1,7 @@
 import locale
 import logging
 import os
+import sys
 import time
 
 from mesido.esdl.esdl_additional_vars_mixin import ESDLAdditionalVarsMixin
@@ -345,10 +346,38 @@ class EndScenarioSizing(
         parameters = self.parameters(0)
         # bounds = self.bounds()
         # Optimized ESDL
-        self._write_updated_esdl(
-            self._ESDLMixin__energy_system_handler.energy_system,
-            NetworkSettings.NETWORK_TYPE_HEAT,
-        )
+        # Assume there are either no stages (write updated ESDL) or a maximum of 2 stages
+        # (only write final results when the stage number is the final stage)
+        # TODO: once database testing has been added, check that the results have only been written
+        # once.
+        try:
+            if self._stage == 0:
+                logger.error(
+                    f"The stage number is: {self._stage} and it is excpected that the"
+                    " stage numbering starts at 1 instead"
+                )
+                sys.exit(1)
+            if self._total_stages == self._stage:  # When staging does exists
+                self._write_updated_esdl(
+                    self._ESDLMixin__energy_system_handler.energy_system,
+                    NetworkSettings.NETWORK_TYPE_HEAT,
+                )
+            elif self._total_stages < self._stage:
+                logger.error(
+                    f"The stage number: {self._stage} is higher then the total stages"
+                    " expected: {self._total_stages}. Assuming the stage numbering starts at 1"
+                )
+                sys.exit(1)
+
+        except AttributeError:
+            # Staging does not exist
+            self._write_updated_esdl(
+                self._ESDLMixin__energy_system_handler.energy_system,
+                NetworkSettings.NETWORK_TYPE_HEAT,
+            )
+        except Exception:
+            logger.error("Unkown error occured when evaluating self._stage for _write_updated_esdl")
+            sys.exit(1)
 
         for d in self.energy_system_components.get("heat_demand", []):
             realized_demand = results[f"{d}.Heat_demand"]
@@ -442,11 +471,13 @@ class SettingsStaged:
     sizes and flow directions.
     """
 
-    _stage = 0
+    _stage = 0  # current stage that is being used
+    _total_stages = 0  # total number of stages to be used
 
     def __init__(
         self,
         stage=None,
+        total_stages=None,
         boolean_bounds: list = None,
         priorities_output: list = None,
         *args,
@@ -455,6 +486,7 @@ class SettingsStaged:
         super().__init__(*args, **kwargs)
 
         self._stage = stage
+        self._total_stages = total_stages
         self.__boolean_bounds = boolean_bounds
 
         if self._stage == 1:
@@ -554,6 +586,7 @@ def run_end_scenario_sizing_no_heat_losses(
     solution = run_optimization_problem(
         end_scenario_problem_class,
         stage=1,
+        total_stages=1,
         **kwargs,
     )
 
@@ -596,6 +629,7 @@ def run_end_scenario_sizing(
         solution = run_optimization_problem(
             end_scenario_problem_class,
             stage=1,
+            total_stages=2,
             **kwargs,
         )
         results = solution.extract_results()
@@ -664,6 +698,7 @@ def run_end_scenario_sizing(
     solution = run_optimization_problem(
         end_scenario_problem_class,
         stage=2,
+        total_stages=2,
         boolean_bounds=boolean_bounds,
         priorities_output=priorities_output,
         **kwargs,
