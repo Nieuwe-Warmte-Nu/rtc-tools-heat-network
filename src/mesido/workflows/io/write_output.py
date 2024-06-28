@@ -923,8 +923,14 @@ class ScenarioOutput(TechnoEconomicMixin):
         results = self.extract_results()
         parameters = self.parameters(0)
 
-        input_energy_system_id = energy_system.id
-        energy_system.id = str(uuid.uuid4())
+        _ = energy_system.id  # input energy system id. Kept here as not sure if still needed
+        energy_system.id = str(uuid.uuid4())  # output energy system id
+        output_energy_system_id = energy_system.id
+        # Currently the simulation_id is created here, but in the future this will probably move
+        # to account for 1 simulation/optimization/run potentialy generating more than 1 output
+        # energy system (ESDL)
+        simulation_id = str(uuid.uuid4())  # simulation (optimization/simulator etc) id
+
         if optimizer_sim:  # network simulator
             energy_system.name = energy_system.name + "_Simulation"
         else:  # network optimization
