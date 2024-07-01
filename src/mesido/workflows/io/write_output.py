@@ -975,7 +975,7 @@ class ScenarioOutput(TechnoEconomicMixin):
                 else:
                     asset.state = esdl.AssetStateEnum.ENABLED
             elif name not in heat_pipes:  # because heat pipes are updated below
-                logger.warning(f"ESDL update: asset {name} has not updated")
+                logger.warning(f"ESDL update: asset {name} has not been updated")
 
         # Pipes:
         edr_pipe_properties_to_copy = ["innerDiameter", "outerDiameter", "diameter", "material"]
