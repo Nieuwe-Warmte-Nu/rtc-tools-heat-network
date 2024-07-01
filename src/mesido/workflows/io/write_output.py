@@ -17,7 +17,6 @@ from esdl.profiles.profilemanager import ProfileManager
 import mesido.esdl.esdl_parser
 from mesido.constants import GRAVITATIONAL_CONSTANT
 from mesido.esdl.edr_pipe_class import EDRPipeClass
-from mesido.network_common import NetworkSettings
 from mesido.techno_economic_mixin import TechnoEconomicMixin
 from mesido.workflows.utils.helpers import _sort_numbered
 
@@ -916,7 +915,10 @@ class ScenarioOutput(TechnoEconomicMixin):
         # end KPIs
 
     def _write_updated_esdl(
-        self, energy_system, optimizer_sim: bool = False, add_kpis: bool = True,
+        self,
+        energy_system,
+        optimizer_sim: bool = False,
+        add_kpis: bool = True,
     ):
         from esdl.esdl_handler import EnergySystemHandler
 
@@ -946,6 +948,7 @@ class ScenarioOutput(TechnoEconomicMixin):
 
         # ------------------------------------------------------------------------------------------
         # Placement
+        heat_pipes = set(self.energy_system_components.get("heat_pipe", []))
         for _, attributes in self.esdl_assets.items():
             name = attributes.name
             if name in [
@@ -971,6 +974,8 @@ class ScenarioOutput(TechnoEconomicMixin):
                     asset.delete(recursive=True)
                 else:
                     asset.state = esdl.AssetStateEnum.ENABLED
+            elif name not in heat_pipes:  # because heat pipes are updated below
+                logger.warning(f"ESDL update: asset {name} has not updated")
 
         # Pipes:
         edr_pipe_properties_to_copy = ["innerDiameter", "outerDiameter", "diameter", "material"]

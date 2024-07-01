@@ -40,7 +40,6 @@ class TestHEX(TestCase):
             #     super().post()
             #     self._write_updated_esdl(
             #         self._ESDLMixin__energy_system_handler.energy_system,
-            #         NetworkSettings.NETWORK_TYPE_HEAT,
             #         optimizer_sim=True,
             #     )
 
@@ -135,7 +134,6 @@ class TestHP(TestCase):
             #     super().post()
             #     self._write_updated_esdl(
             #         self._ESDLMixin__energy_system_handler.energy_system,
-            #         NetworkSettings.NETWORK_TYPE_HEAT,
             #         optimizer_sim=True,
             #     )
 

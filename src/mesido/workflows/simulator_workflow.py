@@ -5,7 +5,6 @@ import esdl
 
 from mesido.esdl.esdl_mixin import ESDLMixin
 from mesido.head_loss_class import HeadLossOption
-from mesido.network_common import NetworkSettings
 from mesido.techno_economic_mixin import TechnoEconomicMixin
 from mesido.workflows.io.write_output import ScenarioOutput
 from mesido.workflows.utils.adapt_profiles import (
@@ -315,7 +314,6 @@ class NetworkSimulatorHIGHS(NetworkSimulator):
         super().post()
         self._write_updated_esdl(
             self._ESDLMixin__energy_system_handler.energy_system,
-            NetworkSettings.NETWORK_TYPE_HEAT,
             optimizer_sim=True,
         )
 
