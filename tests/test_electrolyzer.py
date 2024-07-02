@@ -8,14 +8,12 @@ from mesido.util import run_esdl_mesido_optimization
 import numpy as np
 
 
-# from utils_tests import demand_matching_test, energy_conservation_test, heat_to_discharge_test
-
-
 class TestElectrolyzer(TestCase):
-    def test_electrolyzer(self):
+    def test_electrolyzer_inequality(self):
         """
         This test is to check the functioning the example with an offshore wind farm in combination
-        with an electrolyzer and hydrogen storage.
+        with an electrolyzer and hydrogen storage. The electrolyzer is modelled as the option
+        LINEARIZED_THREE_LINES_WEAK_INEQUALITY.
 
         Checks:
         - The objective value with the revenue included
@@ -26,19 +24,12 @@ class TestElectrolyzer(TestCase):
 
         """
         import models.unit_cases_electricity.electrolyzer.src.example as example
-        from models.unit_cases_electricity.electrolyzer.src.example import MILPProblem
+        from models.unit_cases_electricity.electrolyzer.src.example import MILPProblemInequality
 
         base_folder = Path(example.__file__).resolve().parent.parent
 
-        class MILPProblemSolve(MILPProblem):
-            def energy_system_options(self):
-                options = super().energy_system_options()
-                self.gas_network_settings["pipe_maximum_pressure"] = 100.0  # [bar]
-                self.gas_network_settings["pipe_minimum_pressure"] = 0.0
-                return options
-
         solution = run_esdl_mesido_optimization(
-            MILPProblem,
+            MILPProblemInequality,
             base_folder=base_folder,
             esdl_file_name="h2.esdl",
             esdl_parser=ESDLFileParser,
@@ -143,9 +134,6 @@ class TestElectrolyzer(TestCase):
                 results["Electrolyzer_fc66.ElectricityIn.Power"] * a[i] + b[i] + 1.0e-3,
             )
 
-        # print(results["Electrolyzer_fc66.ElectricityIn.Power"])
-        # print(results["Electrolyzer_fc66.Gas_mass_flow_out"])
-
         #  -----------------------------------------------------------------------------------------
         # Do cost checks
 
@@ -186,12 +174,83 @@ class TestElectrolyzer(TestCase):
             sum(results["Electrolyzer_fc66__investment_cost"]),
         )
         #  -----------------------------------------------------------------------------------------
+        # TODO: add check on the electricity power conservation
 
+    def test_electrolyzer_minimum_power(self):
+        """
+        This test is to check that the electrolyzer is switched off when input power is below
+        the minimum power. The electrolyzer is modelled as the option
+        LINEARIZED_THREE_LINES_WEAK_INEQUALITY.
 
-if __name__ == "__main__":
-    import time
+        Checks:
+        - Input power to the electrolyzer is 0
+        - Output gas is 0
+        - Electrolyzer is switched off
 
-    start_time = time.time()
-    test = TestElectrolyzer()
-    sol = test.test_electrolyzer()
-    print("Execution time: " + time.strftime("%M:%S", time.gmtime(time.time() - start_time)))
+        """
+        import models.unit_cases_electricity.electrolyzer.src.example as example
+        from models.unit_cases_electricity.electrolyzer.src.example import MILPProblemInequality
+
+        base_folder = Path(example.__file__).resolve().parent.parent
+
+        solution = run_esdl_mesido_optimization(
+            MILPProblemInequality,
+            base_folder=base_folder,
+            esdl_file_name="h2.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries_minimum_electrolyzer_power.csv",
+        )
+
+        results = solution.extract_results()
+
+        # Check that the input power is 0
+        np.testing.assert_allclose(
+            results["Electrolyzer_fc66.ElectricityIn.Power"][-1],
+            0.0,
+        )
+        # Check that the output gas is 0
+        np.testing.assert_allclose(
+            results["Electrolyzer_fc66.Gas_mass_flow_out"][-1],
+            0.0,
+        )
+        # Check that the electrolyzer is switched off
+        np.testing.assert_allclose(
+            results["Electrolyzer_fc66__asset_is_switched_on"][-1],
+            0,
+        )
+
+    def test_electrolyzer_constant_efficiency(self):
+        """
+        This test is to check the functioning the example with an offshore wind farm in combination
+        with an electrolyzer and hydrogen storage. The electrolyzer is modelled as the option
+        CONSTANT_EFFICIENCY.
+
+        Checks:
+        - Check the constant efficiency formulation of the electrolyzer
+
+        """
+        import models.unit_cases_electricity.electrolyzer.src.example as example
+        from models.unit_cases_electricity.electrolyzer.src.example import (
+            MILPProblemConstantEfficiency,
+        )
+
+        base_folder = Path(example.__file__).resolve().parent.parent
+
+        solution = run_esdl_mesido_optimization(
+            MILPProblemConstantEfficiency,
+            base_folder=base_folder,
+            esdl_file_name="h2.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries.csv",
+        )
+
+        results = solution.extract_results()
+
+        # Electrolyser
+        efficiency = solution.parameters(0)["Electrolyzer_fc66.efficiency"]
+        np.testing.assert_allclose(
+            results["Electrolyzer_fc66.Gas_mass_flow_out"] * efficiency,
+            results["Electrolyzer_fc66.ElectricityIn.Power"],
+        )
