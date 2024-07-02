@@ -1,8 +1,10 @@
 from pathlib import Path
 from unittest import TestCase
 
+import mesido._darcy_weisbach as darcy_weisbach
 from mesido.esdl.esdl_parser import ESDLFileParser
 from mesido.esdl.profile_parser import ProfileReaderFromFile
+from mesido.network_common import NetworkSettings
 from mesido.util import run_esdl_mesido_optimization
 
 import numpy as np
@@ -21,6 +23,7 @@ class TestElectrolyzer(TestCase):
         - Check the setpoint for the windfarm
         - Check the max production profile of the windfarm
         - Check the electrolyzer inequality constraints formulation
+        - The water kinematic viscosity of hydrogen by comparing head loss to a hard-coded value
 
         """
         import models.unit_cases_electricity.electrolyzer.src.example as example
@@ -38,6 +41,20 @@ class TestElectrolyzer(TestCase):
         )
 
         results = solution.extract_results()
+
+        # Compare the head loss to hard-coded values. Difference expected if an error
+        # occours in the calculation of the gas kinematic viscosity.
+        v_inspect = results["Pipe_6ba6.GasOut.Q"][1] / solution.parameters(0)["Pipe_6ba6.area"]
+        head_loss_v_inspect = darcy_weisbach.head_loss(
+            v_inspect,
+            solution.parameters(0)["Pipe_6ba6.diameter"],
+            solution.parameters(0)["Pipe_6ba6.length"],
+            solution.energy_system_options()["wall_roughness"],
+            20.0,
+            network_type=NetworkSettings.NETWORK_TYPE_HYDROGEN,
+            pressure=solution.parameters(0)["Pipe_6ba6.pressure"],
+        )
+        np.testing.assert_allclose(head_loss_v_inspect, 104.06961666355383)
 
         gas_price_profile = "gas.price_profile"
         state = "GasDemand_0cf3.Gas_demand_mass_flow"
