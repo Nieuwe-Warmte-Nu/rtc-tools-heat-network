@@ -98,16 +98,20 @@ class TestColdDemand(TestCase):
         base_folder = Path(example.__file__).resolve().parent.parent
 
         class HeatingCoolingProblem(HeatProblem):
-            # def energy_system_options(self):
-            #     options = super().energy_system_options()
-            #     options["neglect_pipe_heat_losses"] = True
-            #     return options
+
+            # temp code below
+            def energy_system_options(self):
+                options = super().energy_system_options()
+                options["neglect_pipe_heat_losses"] = True
+                return options
 
             def constraints(self, ensemble_member):
                 constraints = super().constraints(ensemble_member)
 
-                # Add cyclic constraint, this will also ensure that the total power used in the
-                # lower temp & higher temp well and via versa is the same.
+                # TODO: confirm if volume or heat balance is required over year. This will
+                # determine if cyclic contraint below is for stored_heat or stored_volume
+                # Add stored_heat cyclic constraint, this will also ensure that the total heat
+                # change in the wko is 0 over the timeline
                 # Note:
                 #   - WKO in cooling mode: Hot well is being charged with heat and the cold well is
                 # being discharged
@@ -116,34 +120,20 @@ class TestColdDemand(TestCase):
                 for a in self.energy_system_components.get("low_temperature_ates", []):
                     stored_heat = self.state_vector(f"{a}.Stored_heat")
                     constraints.append(((stored_heat[-1] - stored_heat[0]), 0.0, 0.0))
-                    # This was added to force the heatpump to start loading the WKO 1st 3 timesteps
-                    # constraints.append((stored_heat[0], 0.0, 0.0))
-
-                # TODO: confirm if the yearly balance between warm and cold well is heat / flow
-                # related?
                 # This code below might be needed
-                # Add constriant such that the total volume used of the lower temp & higher temp
-                # well of the WKO is the same. Yearly volume balance between the 2 wells. This
-                # ensures volume balance over the timeline. This is done by adding a constriant to
-                # esnure the total volume change over the period = 0.
+                # Add stored_heat cyclic constraint, this will also ensure that the volume
+                # into the lower temp & out of the higher temp is the same as the volume
+                # out of the lower temp & into the higher temp over the timeline.
                 # Note:
                 #   - Volume increase: Hot well is being charged and the cold well is being
                 #     discharged. -> WKO in cooling mode
                 #   - Volume decrease: Cold well is being charged and the hot well is being
                 #     discharged. -> WKO in heating mode
-                # if heat balance over the year is required, then this needs to change ?????? TBC
                 # for ates_id in self.energy_system_components.get("low_temperature_ates", []):
                 #     stored_volume = self.state_vector(f"{ates_id}.Stored_volume")
                 #     volume_usage = 0.0
-
                 #     volume_usage = stored_volume[0] - stored_volume[-1]
                 #     constraints.append((volume_usage, 0.0, 0.0))
-
-                    # for itstep in range(len(self.times()) - 1):
-                    #     volume_usage = (
-                    #         volume_usage + stored_volume[itstep + 1] - stored_volume[itstep]
-                    #     )
-                    # constraints.append((volume_usage, 0.0, 0.0))
 
                 return constraints
 
@@ -175,3 +165,10 @@ if __name__ == "__main__":
     test_cold_demand.test_wko()
 
     a = 1
+
+
+# results["Pipe2.HeatIn.Heat"] - results["Pipe2.HeatOut.Heat"] + (results["Pipe5.HeatIn.Heat"] - results["Pipe5.HeatOut.Heat"]) + (results["ATES_226d.Stored_heat"][1] - results["ATES_226d.Stored_heat"][0])/3600
+
+# temp = results["Pipe2.HeatIn.Heat"] - results["Pipe2.HeatOut.Heat"] + (results["Pipe5.HeatIn.Heat"] - results["Pipe5.HeatOut.Heat"])
+
+# (results["ATES_226d.Stored_heat"][1:] - results["ATES_226d.Stored_heat"][0:-1])/3600 + temp[1:]
