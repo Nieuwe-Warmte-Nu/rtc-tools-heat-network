@@ -76,12 +76,12 @@ class TestProfileLoading(unittest.TestCase):
         default UTC timezone has been set.
         """
         import models.unit_cases_electricity.electrolyzer.src.example as example
-        from models.unit_cases_electricity.electrolyzer.src.example import MILPProblem
+        from models.unit_cases_electricity.electrolyzer.src.example import MILPProblemInequality
 
         base_folder = Path(example.__file__).resolve().parent.parent
         model_folder = base_folder / "model"
         input_folder = base_folder / "input"
-        problem = MILPProblem(
+        problem = MILPProblemInequality(
             esdl_parser=ESDLFileParser,
             base_folder=base_folder,
             model_folder=model_folder,
@@ -104,7 +104,9 @@ class TestProfileLoading(unittest.TestCase):
         np.testing.assert_equal(expected_array, problem.get_timeseries("elec.price_profile").values)
 
         expected_array = np.array([1.0e6] * 3)
-        np.testing.assert_equal(expected_array, problem.get_timeseries("gas.price_profile").values)
+        np.testing.assert_equal(
+            expected_array, problem.get_timeseries("Hydrogen.price_profile").values
+        )
 
     def test_loading_from_xml(self):
         """
@@ -145,12 +147,12 @@ class TestProfileLoading(unittest.TestCase):
         if the loaded profiles match those specified in the csv.
         """
         import models.unit_cases_electricity.electrolyzer.src.example as example
-        from models.unit_cases_electricity.electrolyzer.src.example import MILPProblem
+        from models.unit_cases_electricity.electrolyzer.src.example import MILPProblemInequality
 
         base_folder = Path(example.__file__).resolve().parent.parent
         model_folder = base_folder / "model"
         input_folder = base_folder / "input"
-        problem = MILPProblem(
+        problem = MILPProblemInequality(
             esdl_parser=ESDLFileParser,
             base_folder=base_folder,
             model_folder=model_folder,
@@ -173,8 +175,15 @@ class TestProfileLoading(unittest.TestCase):
         np.testing.assert_equal(expected_array, problem.get_timeseries("elec.price_profile").values)
 
         expected_array = np.array([1.0e6] * 3)
-        np.testing.assert_equal(expected_array, problem.get_timeseries("gas.price_profile").values)
+        np.testing.assert_equal(
+            expected_array, problem.get_timeseries("Hydrogen.price_profile").values
+        )
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    a = TestProfileLoading()
+    a.test_loading_from_influx()
+    a.test_loading_from_csv()
+    a.test_loading_from_xml()
+    a.test_loading_from_csv_with_influx_profiles_given()

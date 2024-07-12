@@ -1,6 +1,7 @@
 import logging
+from enum import IntEnum
 from math import isclose
-from typing import Tuple
+from typing import List, Tuple
 
 import casadi as ca
 
@@ -15,6 +16,28 @@ from rtctools.optimization.timeseries import Timeseries
 
 
 logger = logging.getLogger("mesido")
+
+
+class ElectrolyzerOption(IntEnum):
+    """
+    Enumeration for the possible options to model the electrolyzer.
+    For detailed calculations related to these options, see the equations themselves.
+
+    CONSTANT_EFFICIENCY
+        A constant efficiency is used to determine the H2 produced per energy electricity entering
+
+    LINEARIZED_THREE_LINES_WEAK_INEQUALITY
+        The efficiency curve is linearized in 3 lines, which are all inequalities and with proper
+        goals will move towards these lines
+
+    LINEARIZED_THREE_LINES_EQUALITY
+        The efficiency curve is linearized in 3 lines, which are all equalities using binary
+        variables and the big-M method to select the relevant lines.
+    """
+
+    CONSTANT_EFFICIENCY = 1
+    LINEARIZED_THREE_LINES_WEAK_INEQUALITY = 2
+    LINEARIZED_THREE_LINES_EQUALITY = 3
 
 
 class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationProblem):
@@ -48,6 +71,11 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         self.__set_point_bounds = {}
         self.__set_point_map = {}
 
+        self.__electricity_storage_discharge_var = {}
+        self.__electricity_storage_discharge_bounds = {}
+        self.__electricity_storage_discharge_nominals = {}
+        self.__electricity_storage_discharge_map = {}
+
     def energy_system_options(self):
         r"""
         Returns a dictionary of milp network specific options.
@@ -57,6 +85,10 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
 
         options["include_asset_is_switched_on"] = False
         options["include_electric_cable_power_loss"] = False
+        options["electrolyzer_efficiency"] = (
+            ElectrolyzerOption.LINEARIZED_THREE_LINES_WEAK_INEQUALITY
+        )
+        options["electricity_storage_discharge_variables"] = False
 
         return options
 
@@ -94,6 +126,16 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
             self.__storage_charging_var[var_name] = ca.MX.sym(var_name)
             self.__storage_charging_bounds[var_name] = (0.0, 1.0)
 
+            if options["electricity_storage_discharge_variables"]:
+                bound_storage = self.bounds()[f"{asset}.Effective_power_charging"][0]
+                var_name = f"{asset}__effective_power_discharging"
+                self.__electricity_storage_discharge_map[asset] = var_name
+                self.__electricity_storage_discharge_var[var_name] = ca.MX.sym(var_name)
+                self.__electricity_storage_discharge_bounds[var_name] = (0, -bound_storage)
+                self.__electricity_storage_discharge_nominals[var_name] = self.variable_nominal(
+                    f"{asset}.Effective_power_charging"
+                )
+
         for asset in [*self.energy_system_components.get("electricity_source", [])]:
             if isinstance(self.bounds()[f"{asset}.Electricity_source"][1], Timeseries):
                 var_name = f"{asset}__set_point"
@@ -123,6 +165,7 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         variables.extend(self.__asset_is_switched_on_var.values())
         variables.extend(self.__storage_charging_var.values())
         variables.extend(self.__set_point_var.values())
+        variables.extend(self.__electricity_storage_discharge_var.values())
 
         return variables
 
@@ -142,6 +185,8 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         """
         In this function we add all the nominals for the variables defined/added in the HeatMixin.
         """
+        if variable in self.__electricity_storage_discharge_nominals:
+            return self.__electricity_storage_discharge_nominals[variable]
 
         return super().variable_nominal(variable)
 
@@ -156,6 +201,7 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         bounds.update(self.__storage_charging_bounds)
         bounds.update(self.__electricity_producer_upper_bounds)
         bounds.update(self.__set_point_bounds)
+        bounds.update(self.__electricity_storage_discharge_bounds)
 
         return bounds
 
@@ -189,13 +235,13 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
 
     def __update_electricity_producer_upper_bounds(self):
         t = self.times()
-        for asset in [
-            *self.energy_system_components.get("wind_park", []),
-            *self.energy_system_components.get("solar_pv", []),
-        ]:
-            lb = Timeseries(t, np.zeros(len(self.times())))
-            ub = self.get_timeseries(f"{asset}.maximum_electricity_source")
-            self.__electricity_producer_upper_bounds[f"{asset}.Electricity_source"] = (lb, ub)
+
+        timeseries_io_names = self.io.get_timeseries_names()
+        for asset in self.energy_system_components.get("electricity_source", []):
+            if f"{asset}.maximum_electricity_source" in timeseries_io_names:
+                lb = Timeseries(t, np.zeros(len(t)))
+                ub = self.get_timeseries(f"{asset}.maximum_electricity_source")
+                self.__electricity_producer_upper_bounds[f"{asset}.Electricity_source"] = (lb, ub)
 
     def __electricity_producer_set_point_constraints(self, ensemble_member):
         """
@@ -509,6 +555,38 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
 
         return constraints
 
+    def __electricity_storage_discharge_var_path_constraints(
+        self, ensemble_member: int
+    ) -> List[Tuple[ca.MX, float, float]]:
+        """
+        The discharge variables are added such that two separate goals for charging and discharging
+        can be created. The discharging variable has a lower bound of 0 and should always be larger
+        or equal to the negative of the inflow variable. This allows for first a minimization of
+        the discharging and afterwards a maximisation of the charging without conflicting goals or
+        constraints.
+
+        :param ensemble_member:
+        :return: list of the additional constraints that are created
+        """
+
+        constraints = []
+        options = self.energy_system_options()
+
+        if options["electricity_storage_discharge_variables"]:
+            for storage in self.energy_system_components.get("electricity_storage", []):
+                storage_eff_power_charge_var = self.state(f"{storage}.Effective_power_charging")
+                discharge_var_name = self.__electricity_storage_discharge_map[storage]
+                storage_discharge_var = self.__electricity_storage_discharge_var[discharge_var_name]
+                nominal = self.variable_nominal(discharge_var_name)
+
+                # P_effective_charge represents both charging and discharing based on the sign.
+                # P_discharge >= -P_effective_charge
+                constraints.append(
+                    ((storage_discharge_var + storage_eff_power_charge_var) / nominal, 0.0, np.inf)
+                )
+
+        return constraints
+
     def __get_electrolyzer_gas_mass_flow_out(
         self, coef_a, coef_b, coef_c, electrical_power_input
     ) -> float:
@@ -531,8 +609,10 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         """
 
         if not isclose(electrical_power_input, 0.0):
-            eff = (coef_a / electrical_power_input) + (coef_b * electrical_power_input) + coef_c
-            gas_mass_flow_out = (1.0 / eff) * electrical_power_input
+            eff = (
+                (coef_a / electrical_power_input) + (coef_b * electrical_power_input) + coef_c
+            )  # Wh/g
+            gas_mass_flow_out = (1.0 / (eff * 3600)) * electrical_power_input
         else:
             gas_mass_flow_out = 0.0
 
@@ -585,52 +665,89 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         """
         constraints = []
         parameters = self.parameters(ensemble_member)
+        options = self.energy_system_options()
+        # TODO: CHECK UNITS MASSFLOW
         for asset in self.energy_system_components.get("electrolyzer", []):
             gas_mass_flow_out = self.state(f"{asset}.Gas_mass_flow_out")
             power_consumed = self.state(f"{asset}.Power_consumed")
-
-            # Multiple linear lines
-            curve_fit_number_of_lines = 3
-            linear_coef_a, linear_coef_b = self._get_linear_coef_electrolyzer_mass_vs_epower_fit(
-                parameters[f"{asset}.a_eff_coefficient"],
-                parameters[f"{asset}.b_eff_coefficient"],
-                parameters[f"{asset}.c_eff_coefficient"],
-                n_lines=curve_fit_number_of_lines,
-                electrical_power_min=max(
-                    parameters[f"{asset}.minimum_load"],
-                    0.01 * self.bounds()[f"{asset}.ElectricityIn.Power"][1],
-                ),
-                electrical_power_max=self.bounds()[f"{asset}.ElectricityIn.Power"][1],
-            )
-            power_consumed_vect = ca.repmat(power_consumed, len(linear_coef_a))
-            gas_mass_flow_out_vect = ca.repmat(gas_mass_flow_out, len(linear_coef_a))
-            gass_mass_out_linearized_vect = linear_coef_a * power_consumed_vect + linear_coef_b
             var_name = self.__asset_is_switched_on_map[asset]
             asset_is_switched_on = self.state(var_name)
-
-            gass_mass_out_max = (
-                linear_coef_a[-1] * self.bounds()[f"{asset}.Power_consumed"][1] + linear_coef_b[-1]
-            )
-            big_m = gass_mass_out_max * 2
-            nominal = (
-                self.variable_nominal(f"{asset}.Gas_mass_flow_out")
-                * min(linear_coef_a)
-                * self.variable_nominal(f"{asset}.Power_consumed")
-            ) ** 0.5
-            constraints.extend(
-                [
-                    (
+            if options["electrolyzer_efficiency"] == ElectrolyzerOption.CONSTANT_EFFICIENCY:
+                nominal = (
+                    self.variable_nominal(f"{asset}.Gas_mass_flow_out")
+                    * self.variable_nominal(f"{asset}.Power_consumed")
+                ) ** 0.5 * 3600
+                big_m = (
+                    self.bounds()[f"{asset}.Power_consumed"][1]
+                    / parameters[f"{asset}.efficiency"]
+                    / 3600
+                ) * 2
+                constraints.extend(
+                    [
                         (
-                            gas_mass_flow_out_vect
-                            - gass_mass_out_linearized_vect
-                            - (1 - asset_is_switched_on) * big_m
-                        )
-                        / nominal,
-                        -np.inf,
-                        0.0,
-                    ),
-                ]
-            )
+                            (
+                                gas_mass_flow_out * parameters[f"{asset}.efficiency"] * 3600
+                                - power_consumed
+                            )
+                            / nominal,
+                            0.0,
+                            0.0,
+                        ),
+                    ]
+                )
+
+            elif (
+                options["electrolyzer_efficiency"]
+                == ElectrolyzerOption.LINEARIZED_THREE_LINES_WEAK_INEQUALITY
+            ):
+                curve_fit_number_of_lines = 3
+                linear_coef_a, linear_coef_b = (
+                    self._get_linear_coef_electrolyzer_mass_vs_epower_fit(
+                        parameters[f"{asset}.a_eff_coefficient"],
+                        parameters[f"{asset}.b_eff_coefficient"],
+                        parameters[f"{asset}.c_eff_coefficient"],
+                        n_lines=curve_fit_number_of_lines,
+                        electrical_power_min=max(
+                            parameters[f"{asset}.minimum_load"],
+                            0.01 * self.bounds()[f"{asset}.ElectricityIn.Power"][1],
+                        ),
+                        electrical_power_max=self.bounds()[f"{asset}.ElectricityIn.Power"][1],
+                    )
+                )
+                power_consumed_vect = ca.repmat(power_consumed, len(linear_coef_a))
+                gas_mass_flow_out_vect = ca.repmat(gas_mass_flow_out, len(linear_coef_a))
+                gass_mass_out_linearized_vect = linear_coef_a * power_consumed_vect + linear_coef_b
+
+                gass_mass_out_max = (
+                    linear_coef_a[-1] * self.bounds()[f"{asset}.Power_consumed"][1]
+                    + linear_coef_b[-1]
+                )
+                nominal = (
+                    self.variable_nominal(f"{asset}.Gas_mass_flow_out")
+                    * min(linear_coef_a)
+                    * self.variable_nominal(f"{asset}.Power_consumed")
+                ) ** 0.5
+                big_m = gass_mass_out_max * 2
+                constraints.extend(
+                    [
+                        (
+                            (
+                                gas_mass_flow_out_vect
+                                - gass_mass_out_linearized_vect
+                                - (1 - asset_is_switched_on) * big_m
+                            )
+                            / nominal,
+                            -np.inf,
+                            0.0,
+                        ),
+                    ]
+                )
+            elif (
+                options["electrolyzer_efficiency"]
+                == ElectrolyzerOption.LINEARIZED_THREE_LINES_EQUALITY
+            ):
+                raise NotImplementedError
+
             constraints.append(
                 ((gas_mass_flow_out + asset_is_switched_on * big_m) / big_m, 0.0, np.inf)
             )
@@ -677,6 +794,9 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         constraints.extend(self.__voltage_loss_path_constraints(ensemble_member))
         constraints.extend(self.__electrolyzer_path_constaint(ensemble_member))
         constraints.extend(self.__electricity_storage_path_constraints(ensemble_member))
+        constraints.extend(
+            self.__electricity_storage_discharge_var_path_constraints(ensemble_member)
+        )
 
         return constraints
 
