@@ -1863,9 +1863,21 @@ class AssetToHeatComponent(_AssetToComponentBase):
         ]
         # DO not remove due usage in future
         # hydrogen_specfic_energy = 20.0 / 1.0e6
+        specific_energy = (
+            self.get_internal_energy(asset.name, asset.in_ports[0].carrier) / 10
+        )  # J/g
+        # TODO: the value being used is the internal energy and not the HHV (higher
+        #  heating value) for hydrogen, therefore it does not represent the energy per weight.
+        #  This still needs to be updated
         density = self.get_density(asset.name, asset.in_ports[0].carrier)
         pressure = asset.in_ports[0].carrier.pressure * 1.0e5
         q_nominal = self._get_connected_q_nominal(asset)
+        q_max = self._get_connected_q_max(asset)
+        # [g/s] = [J/s] * [J/kg]^-1 *1000
+        max_mass_flow_g_per_s = min(
+            asset.attributes["power"] / specific_energy * 1000.0, q_max * density
+        )
+        mass_flow_nominal_g_per_s = min(q_nominal * density, max_mass_flow_g_per_s / 2)
 
         modifiers = dict(
             Q_nominal=q_nominal,
@@ -1874,12 +1886,8 @@ class AssetToHeatComponent(_AssetToComponentBase):
             # *hydrogen_specfic_energy),
             density=density,
             GasIn=dict(
-                Q=dict(
-                    min=0.0,
-                    max=self._get_connected_q_max(asset),
-                    nominal=self._get_connected_q_nominal(asset),
-                ),
-                mass_flow=dict(nominal=density * q_nominal),
+                Q=dict(min=0.0, max=q_max, nominal=q_nominal),
+                mass_flow=dict(nominal=mass_flow_nominal_g_per_s, max=max_mass_flow_g_per_s),
                 Hydraulic_power=dict(min=0.0, max=0.0, nominal=q_nominal * pressure),
             ),
             **self._get_cost_figure_modifiers(asset),
@@ -1930,20 +1938,25 @@ class AssetToHeatComponent(_AssetToComponentBase):
         q_nominal = self._get_connected_q_nominal(asset)
         density_value = self.get_density(asset.name, asset.out_ports[0].carrier)
         pressure = asset.out_ports[0].carrier.pressure * 1.0e5
+        specific_energy = (
+            self.get_internal_energy(asset.name, asset.out_ports[0].carrier) / 10
+        )  # J/g #TODO: is not the HHV for hydrogen, so is off
+        # [g/s] = [J/s] * [J/kg]^-1 *1000
+        max_mass_flow_g_per_s = asset.attributes["power"] / specific_energy * 1000.0
 
-        bounds_nominals_mass_flow = dict(
+        bounds_nominals_mass_flow_g_per_s = dict(
             min=0.0,
-            max=self._get_connected_q_max(asset) * density_value,
+            max=min(self._get_connected_q_max(asset) * density_value, max_mass_flow_g_per_s),
             nominal=q_nominal * density_value,
         )
 
         modifiers = dict(
             Q_nominal=q_nominal,
             density=density_value,
-            Gas_source_mass_flow=bounds_nominals_mass_flow,
+            Gas_source_mass_flow=bounds_nominals_mass_flow_g_per_s,
             GasOut=dict(
                 Q=dict(nominal=q_nominal),
-                mass_flow=bounds_nominals_mass_flow,
+                mass_flow=bounds_nominals_mass_flow_g_per_s,
                 Hydraulic_power=dict(nominal=q_nominal * pressure),
             ),
             **self._get_cost_figure_modifiers(asset),
@@ -2019,6 +2032,9 @@ class AssetToHeatComponent(_AssetToComponentBase):
 
         q_nominal = self._get_connected_q_nominal(asset)
         density = self.get_density(asset.name, asset.out_ports[0].carrier)
+        # [g/s] = [W] * [kWh/kg]^-1 * 1/3600 = [g/h] * 1/3600
+        mass_flow_max_g_per_s = max_power / eff_max_load / 3600
+        mass_flow_nominal_g_per_s = min(density * q_nominal, mass_flow_max_g_per_s / 2)
 
         modifiers = dict(
             min_voltage=v_min,
@@ -2027,6 +2043,7 @@ class AssetToHeatComponent(_AssetToComponentBase):
             c_eff_coefficient=c,
             minimum_load=min_load,
             nominal_power_consumed=max_power / 2.0,
+            nominal_gass_mass_out=mass_flow_nominal_g_per_s,
             Q_nominal=q_nominal,
             density=density,
             efficiency=eff_max,
@@ -2036,7 +2053,7 @@ class AssetToHeatComponent(_AssetToComponentBase):
                     max=self._get_connected_q_max(asset),
                     nominal=q_nominal,
                 ),
-                mass_flow=dict(nominal=q_nominal * density),
+                mass_flow=dict(nominal=mass_flow_nominal_g_per_s, max=mass_flow_max_g_per_s),
             ),
             ElectricityIn=dict(
                 Power=dict(min=0.0, max=max_power, nominal=max_power / 2.0),

@@ -235,13 +235,13 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
 
     def __update_electricity_producer_upper_bounds(self):
         t = self.times()
-        for asset in [
-            *self.energy_system_components.get("wind_park", []),
-            *self.energy_system_components.get("solar_pv", []),
-        ]:
-            lb = Timeseries(t, np.zeros(len(self.times())))
-            ub = self.get_timeseries(f"{asset}.maximum_electricity_source")
-            self.__electricity_producer_upper_bounds[f"{asset}.Electricity_source"] = (lb, ub)
+
+        timeseries_io_names = self.io.get_timeseries_names()
+        for asset in self.energy_system_components.get("electricity_source", []):
+            if f"{asset}.maximum_electricity_source" in timeseries_io_names:
+                lb = Timeseries(t, np.zeros(len(t)))
+                ub = self.get_timeseries(f"{asset}.maximum_electricity_source")
+                self.__electricity_producer_upper_bounds[f"{asset}.Electricity_source"] = (lb, ub)
 
     def __electricity_producer_set_point_constraints(self, ensemble_member):
         """
@@ -609,8 +609,10 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
         """
 
         if not isclose(electrical_power_input, 0.0):
-            eff = (coef_a / electrical_power_input) + (coef_b * electrical_power_input) + coef_c
-            gas_mass_flow_out = (1.0 / eff) * electrical_power_input
+            eff = (
+                (coef_a / electrical_power_input) + (coef_b * electrical_power_input) + coef_c
+            )  # Wh/g
+            gas_mass_flow_out = (1.0 / (eff * 3600)) * electrical_power_input
         else:
             gas_mass_flow_out = 0.0
 
@@ -674,14 +676,19 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
                 nominal = (
                     self.variable_nominal(f"{asset}.Gas_mass_flow_out")
                     * self.variable_nominal(f"{asset}.Power_consumed")
-                ) ** 0.5
+                ) ** 0.5 * 3600
                 big_m = (
-                    self.bounds()[f"{asset}.Power_consumed"][1] / parameters[f"{asset}.efficiency"]
+                    self.bounds()[f"{asset}.Power_consumed"][1]
+                    / parameters[f"{asset}.efficiency"]
+                    / 3600
                 ) * 2
                 constraints.extend(
                     [
                         (
-                            (gas_mass_flow_out * parameters[f"{asset}.efficiency"] - power_consumed)
+                            (
+                                gas_mass_flow_out * parameters[f"{asset}.efficiency"] * 3600
+                                - power_consumed
+                            )
                             / nominal,
                             0.0,
                             0.0,
