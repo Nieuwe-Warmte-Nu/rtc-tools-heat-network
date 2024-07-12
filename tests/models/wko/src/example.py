@@ -1,6 +1,3 @@
-import sys
-import traceback
-
 import casadi as ca
 
 from mesido.esdl.esdl_mixin import ESDLMixin

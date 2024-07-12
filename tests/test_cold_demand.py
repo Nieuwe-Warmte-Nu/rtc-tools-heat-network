@@ -99,7 +99,8 @@ class TestColdDemand(TestCase):
 
         class HeatingCoolingProblem(HeatProblem):
 
-            # temp code below
+            # TODO: investigate why test fails when heat_losses are neglected.
+            # An issue has been created for this
             def energy_system_options(self):
                 options = super().energy_system_options()
                 options["neglect_pipe_heat_losses"] = False
@@ -154,21 +155,8 @@ class TestColdDemand(TestCase):
         np.testing.assert_allclose(
             results["ATES_226d.Stored_heat"][0], results["ATES_226d.Stored_heat"][-1]
         )
-        # np.testing.assert_allclose(results["ATES_226d.Stored_heat"][0], 0.0)
-
-        # Heat pump does not switch on to start loading the WKO.
-        # Is this intended for some reason Femke?
 
 
 if __name__ == "__main__":
     test_cold_demand = TestColdDemand()
     test_cold_demand.test_wko()
-
-    a = 1
-
-
-# results["Pipe2.HeatIn.Heat"] - results["Pipe2.HeatOut.Heat"] + (results["Pipe5.HeatIn.Heat"] - results["Pipe5.HeatOut.Heat"]) + (results["ATES_226d.Stored_heat"][1] - results["ATES_226d.Stored_heat"][0])/3600
-
-# temp = results["Pipe2.HeatIn.Heat"] - results["Pipe2.HeatOut.Heat"] + (results["Pipe5.HeatIn.Heat"] - results["Pipe5.HeatOut.Heat"])
-
-# (results["ATES_226d.Stored_heat"][1:] - results["ATES_226d.Stored_heat"][0:-1])/3600 + temp[1:]
