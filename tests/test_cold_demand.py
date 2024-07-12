@@ -102,7 +102,7 @@ class TestColdDemand(TestCase):
             # temp code below
             def energy_system_options(self):
                 options = super().energy_system_options()
-                options["neglect_pipe_heat_losses"] = True
+                options["neglect_pipe_heat_losses"] = False
                 return options
 
             def constraints(self, ensemble_member):
