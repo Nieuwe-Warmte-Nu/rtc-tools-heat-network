@@ -103,7 +103,7 @@ class TestColdDemand(TestCase):
             # An issue has been created for this
             def energy_system_options(self):
                 options = super().energy_system_options()
-                options["neglect_pipe_heat_losses"] = False
+                options["neglect_pipe_heat_losses"] = True
                 return options
 
             def constraints(self, ensemble_member):
