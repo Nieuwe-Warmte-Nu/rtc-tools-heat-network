@@ -27,6 +27,7 @@ from rtctools.optimization.single_pass_goal_programming_mixin import (
     CachingQPSol,
     SinglePassGoalProgrammingMixin,
 )
+from rtctools.optimization.timeseries import Timeseries
 from rtctools.util import run_optimization_problem
 
 DB_HOST = "172.17.0.2"
@@ -42,6 +43,29 @@ locale.setlocale(locale.LC_ALL, "")
 
 WATT_TO_MEGA_WATT = 1.0e6
 WATT_TO_KILO_WATT = 1.0e3
+
+
+def _extract_values_timeseries(v, type_r=None):
+    if isinstance(v, Timeseries):
+        v = v.values
+        if type_r == "min":
+            v = min(v)
+        elif type_r == "max":
+            v = max(v)
+    return v
+
+
+class OptimisationOverview:
+    """
+    This class is used to combine the optimisation results, bounds, parameters and aliases
+    needed for post-processing and visualisation.
+    """
+
+    def __init__(self, total_results, bounds, parameters, aliases):
+        self.results = total_results
+        self.bounds = bounds
+        self.parameters = parameters
+        self.aliases = aliases
 
 
 # -------------------------------------------------------------------------------------------------
@@ -393,11 +417,16 @@ class MultiCommoditySimulator(
                 # Marginal costs for discharging > marginal cost for charging
                 variable_name = f"{asset}.{asset_variable_map[asset]['charge']}"
 
+                func_range = self.bounds()[variable_name]
+                v1 = _extract_values_timeseries(func_range[0], "min")
+                v2 = _extract_values_timeseries(func_range[1], "max")
+                func_range = (v1, v2)
+
                 goals.append(
                     MaximizeStorageGoalMerit(
                         variable_name,
                         marginal_priority,
-                        self.bounds()[variable_name],
+                        func_range,
                         self.variable_nominal(variable_name),
                     )
                 )
@@ -415,11 +444,16 @@ class MultiCommoditySimulator(
 
                 variable_name = f"{asset}{asset_variable_map[asset]['discharge']}"
 
+                func_range = self.bounds()[variable_name]
+                v1 = _extract_values_timeseries(func_range[0], "min")
+                v2 = _extract_values_timeseries(func_range[1], "max")
+                func_range = (v1, v2)
+
                 goals.append(
                     MinimizeStorageGoalMerit(
                         variable_name,
                         marginal_priority,
-                        self.bounds()[variable_name],
+                        func_range,
                         self.variable_nominal(variable_name),
                     )
                 )
@@ -647,6 +681,144 @@ class MultiCommoditySimulatorNoLosses(MultiCommoditySimulator):
         highs_options["presolve"] = "off"
 
         return options
+
+
+def run_sequatially_staged_simulation(
+    multi_commodity_simulator_class, simulation_window_size=2, *args, **kwargs
+):
+    """
+    This function is to run the MultiCommoditySimulator class in a staged manner where the stages
+    are sequantial parts of the time horizon. This is done to make the problem smaller and allow
+    for quicker run of the optimization/simulation. To ensure a physically sound result the
+    variables that affect the outcome of the next stage are constrained by setting bounds, e.g. the
+    amount of stored energy in a storage.
+
+    Parameters
+    ----------
+    multi_commodity_simulator_class : The problem class to run
+    simulation_window_size : The amount of indices to run in a single stage
+
+    Returns
+    -------
+    The results dict where all the time results are concatenated.
+    """
+
+    class MultiCommoditySimulatorTimeSequential(multi_commodity_simulator_class):
+        """
+        This Problem class is used to run the MultiCommoditySimulator class in a sequantial manner
+        to reduce computational time. This class enables this by allowing to run a part of the
+        timeseries and setting bounds on the (initial-)state variables.
+        """
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            self.__start_time_index = kwargs.get("start_index", None)
+            self.__end_time_index = kwargs.get("end_index", None)
+            self._full_time_series = None
+
+            self.__storage_initial_state_bounds = kwargs.get("storage_initial_state_bounds", {})
+
+        def times(self, variable=None) -> np.ndarray:
+            """
+            In this function the part of the time-horizon is enforced. Note that the full
+            time-horizon is also set to an internal member for enabling setting bounds to the next
+            sequantial optimization.
+            """
+            if self._full_time_series is None:
+                self._full_time_series = super().times(variable)
+
+            if self.__start_time_index is not None and self.__end_time_index is not None:
+                return super().times(variable)[self.__start_time_index : self.__end_time_index]
+            elif self.__start_time_index is not None:
+                return super().times(variable)[self.__start_time_index :]
+            elif self.__end_time_index is not None:
+                return super().times(variable)[: self.__end_time_index]
+            else:
+                return super().times(variable)
+
+        def bounds(self):
+            """
+            Here we set bounds on the initial state to ensure that the sequantial simulation is a
+            physcially valid.
+            """
+            bounds = super().bounds()
+            bounds.update(self.__storage_initial_state_bounds)
+            return bounds
+
+    # Note that the window size should be larger than 1 otherwise this function is has no
+    # benefit and the writing of the results dict will fail.
+    assert simulation_window_size >= 2
+
+    total_results = None
+    # This is an initial value for end_time, will be corrected after the first stage
+    end_time = 2 * simulation_window_size
+    end_time_confirmed = False
+    storage_initial_state_bounds = {}
+
+    # TODO: make this dict complete for all relevant assets and their associated variables.
+    constrained_assets = {
+        "electricity_storage": ["Stored_electricity", "Effective_power_charging"],
+        "gas_tank_storage": ["Stored_gas_mass", "Gas_tank_flow"],
+    }
+
+    tic = time.time()
+    for simulated_window in range(0, end_time, simulation_window_size):
+
+        # Note that the end time is not necessarily a multiple of simulation_window_size
+        sub_end_time = min(end_time, simulated_window + simulation_window_size)
+
+        # max operation for start_index to avoid the overlap function in the first stage
+        solution = run_optimization_problem(
+            MultiCommoditySimulatorTimeSequential,
+            start_index=max(simulated_window - 1, 0),
+            end_index=sub_end_time,
+            storage_initial_state_bounds=storage_initial_state_bounds,
+            **kwargs,
+        )
+        if not end_time_confirmed:
+            end_time = len(solution._full_time_series)
+            end_time_confirmed = True
+        results = solution.extract_results()
+
+        # TODO: check if we now capture all relevant variables.
+        if total_results is None:
+            total_results = results
+            aliases = solution.alias_relation._canonical_variables_map
+            bounds = solution.bounds()
+            parameters = solution.parameters(0)
+        else:
+            for key, data in results.items():
+                if len(total_results[key]) > 1:
+                    total_results[key] = np.concatenate((total_results[key], data[1:]))
+
+        if sub_end_time < end_time:
+            for asset_type, variables in constrained_assets.items():
+                for asset in solution.energy_system_components.get(asset_type, []):
+                    sub_time_series = solution._full_time_series[
+                        simulated_window
+                        - 1
+                        + simulation_window_size : min(
+                            end_time, simulated_window + 2 * simulation_window_size
+                        )
+                    ]
+                    for variable in variables:
+                        lb_value = _extract_values_timeseries(
+                            solution.bounds()[f"{asset}.{variable}"][0], "min"
+                        )
+                        ub_value = _extract_values_timeseries(
+                            solution.bounds()[f"{asset}.{variable}"][1], "max"
+                        )
+                        lb_values = [lb_value] * len(sub_time_series)
+                        ub_values = [ub_value] * len(sub_time_series)
+                        lb_values[0] = ub_values[0] = results[f"{asset}.{variable}"][-1]
+                        lb = Timeseries(sub_time_series, lb_values)
+                        ub = Timeseries(sub_time_series, ub_values)
+                        storage_initial_state_bounds[f"{asset}.{variable}"] = (lb, ub)
+
+    print(time.time() - tic)
+
+    return OptimisationOverview(total_results, bounds, parameters, aliases)
 
 
 # -------------------------------------------------------------------------------------------------

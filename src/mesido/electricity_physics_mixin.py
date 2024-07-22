@@ -1,3 +1,4 @@
+import copy
 import logging
 from enum import IntEnum
 from math import isclose
@@ -146,11 +147,14 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
             self.__storage_charging_bounds[var_name] = (0.0, 1.0)
 
             if options["electricity_storage_discharge_variables"]:
-                bound_storage = self.bounds()[f"{asset}.Effective_power_charging"][0]
+                bound_storage = -self.bounds()[f"{asset}.Effective_power_charging"][0]
+                if isinstance(bound_storage, Timeseries):
+                    bound_storage = copy.deepcopy(bound_storage)
+                    bound_storage.values[bound_storage.values < 0] = 0.0
                 var_name = f"{asset}__effective_power_discharging"
                 self.__electricity_storage_discharge_map[asset] = var_name
                 self.__electricity_storage_discharge_var[var_name] = ca.MX.sym(var_name)
-                self.__electricity_storage_discharge_bounds[var_name] = (0, -bound_storage)
+                self.__electricity_storage_discharge_bounds[var_name] = (0, bound_storage)
                 self.__electricity_storage_discharge_nominals[var_name] = self.variable_nominal(
                     f"{asset}.Effective_power_charging"
                 )
@@ -264,6 +268,9 @@ class ElectricityPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimi
             if f"{asset}.maximum_electricity_source" in timeseries_io_names:
                 lb = Timeseries(t, np.zeros(len(t)))
                 ub = self.get_timeseries(f"{asset}.maximum_electricity_source")
+                start_indx = np.where(ub.times == t[0])[0][0]
+                end_indx = np.where(ub.times == t[-1])[0][0] + 1
+                ub = Timeseries(t, (np.asarray(ub.values)[start_indx:end_indx]).tolist())
                 self.__electricity_producer_upper_bounds[f"{asset}.Electricity_source"] = (lb, ub)
 
     def __electricity_producer_set_point_constraints(self, ensemble_member):

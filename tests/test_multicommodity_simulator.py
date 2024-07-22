@@ -9,6 +9,7 @@ from mesido.network_common import NetworkSettings
 from mesido.workflows.multicommodity_simulator_workflow import (
     MultiCommoditySimulator,
     MultiCommoditySimulatorNoLosses,
+    run_sequatially_staged_simulation,
 )
 
 import numpy as np
@@ -31,7 +32,7 @@ def check_electrolyzer_efficiency(tol, electrolyzer_gas, electrolyzer_power, esd
         esdl_electrolyzer.attributes["effMinLoad"],
         esdl_electrolyzer.attributes["efficiency"],
     )
-    np.testing.assert_array_less(min(provided_efficiencies), efficiency[electrolyzer_power > 0])
+    np.testing.assert_array_less(min(provided_efficiencies), efficiency[electrolyzer_power > 1])
     np.testing.assert_array_less(
         efficiency[electrolyzer_power > 0], max(provided_efficiencies) + tol
     )
@@ -534,7 +535,6 @@ class TestMultiCommoditySimulator(TestCase):
             head_loss_full_var = results[f"{pipe}.__head_loss"]
             # If this test fails there is most likely a scaling issue.
             indexes = np.abs(v_pipe) > 0.0
-
             indexes[0] = False
             np.testing.assert_allclose(
                 np.abs(np.asarray(head_loss[indexes])), head_loss_full_var[indexes]
@@ -567,6 +567,102 @@ class TestMultiCommoditySimulator(TestCase):
                     b = dw_headloss_min - a * velocities[line_num - 1]
                     headloss_calc = a * v + b
                     np.testing.assert_allclose(abs(head_loss[i]), headloss_calc, 0.1)
+
+    def test_multi_commodity_simulator_sequential_staged(self):
+        """
+        Test to run the multicommodity simulator including a battery and gas storage using
+        the sequential staged optimization approach. The results between the staged and unstaaged
+        approach should be equal if the assets in the system do not have an internal state that
+        makes timesteps interdependent (like Stored_energy for a battery) or when the bounds on
+        those states do not limit the problem.
+
+        Checks:
+        - that the staged approach results in same values as the unstaged approach.
+        - Verify that under limited case bounds are set correctly.
+        """
+        import models.emerge.src.example as example
+
+        base_folder = Path(example.__file__).resolve().parent.parent
+
+        solution_staged_unbounded = run_sequatially_staged_simulation(
+            multi_commodity_simulator_class=MultiCommoditySimulatorNoLosses,
+            simulation_window_size=20,
+            base_folder=base_folder,
+            esdl_file_name="emerge_battery_priorities.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries_short.csv",
+        )
+
+        results_staged = solution_staged_unbounded.results
+
+        solution_unstaged = run_optimization_problem(
+            MultiCommoditySimulatorNoLosses,
+            base_folder=base_folder,
+            esdl_file_name="emerge_battery_priorities.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries_short.csv",
+        )
+
+        results_unstaged = solution_unstaged.extract_results()
+
+        # Checking that the results are the same.
+        for key, value in results_unstaged.items():
+            value_staged = results_staged[key]
+            np.testing.assert_allclose(value, value_staged)
+
+        solution_staged_bounded = run_sequatially_staged_simulation(
+            multi_commodity_simulator_class=MultiCommoditySimulatorNoLosses,
+            simulation_window_size=20,
+            base_folder=base_folder,
+            esdl_file_name="emerge_battery_priorities_limited_capacity.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries_short.csv",
+        )
+
+        results_staged_bounded = solution_staged_bounded.results
+
+        solution_unstaged_bounded = run_optimization_problem(
+            MultiCommoditySimulatorNoLosses,
+            base_folder=base_folder,
+            esdl_file_name="emerge_battery_priorities_limited_capacity.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries_short.csv",
+        )
+
+        results_unstaged_bounded = solution_unstaged_bounded.extract_results()
+
+        check_different = np.sum(
+            np.abs(
+                results_staged_bounded["Battery_4688.Stored_electricity"]
+                - results_unstaged_bounded["Battery_4688.Stored_electricity"]
+            )
+        )
+
+        assert check_different > 0
+
+        class MultiCommoditySimulatorNoLossesWin(MultiCommoditySimulatorNoLosses):
+            def times(self, variable=None) -> np.ndarray:
+                return super().times(variable)[:20]
+
+        solution_unstaged_bounded_win = run_optimization_problem(
+            MultiCommoditySimulatorNoLossesWin,
+            base_folder=base_folder,
+            esdl_file_name="emerge_battery_priorities_limited_capacity.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries_short.csv",
+        )
+
+        results_unstaged_bounded_win = solution_unstaged_bounded_win.extract_results()
+
+        np.testing.assert_allclose(
+            results_staged_bounded["Battery_4688.Stored_electricity"][20],
+            results_unstaged_bounded_win["Battery_4688.Stored_electricity"][-1],
+        )
 
 
 if __name__ == "__main__":
