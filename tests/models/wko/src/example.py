@@ -166,7 +166,6 @@ class HeatProblem(
         The appended list of goals
         """
         goals = super().path_goals().copy()
-        self.energy_system_components["heat_source"]
 
         for s in self.energy_system_components["heat_source"]:
             goals.append(MinimizeSourcesHeatGoal(s))
