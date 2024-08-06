@@ -84,24 +84,30 @@ class TestColdDemand(TestCase):
         The demand profiles and the size of the heat pump has been chosen such that the heat is
         required is required to switch on to load the warm well of the WKO.
 
-        Checks:
+        Checks for scenario with and without pipe heat losses:
         1. demand is matched
         2. energy conservation in the network
         3. heat to discharge (note cold line is colder than T_ground)
         4. the cyclic heat_stored contraint, which ensures yearly heat balance between the warm and
         cold well
-
+        5. pipe heat loss and gain
+            - pipe heat losses included: expect loss and gain values due to the carrier
+            temperatures (warm and cold) in the pipes being higher and lower than the ground
+            temperature
+            - pipe heat losses excluded: excpect no heat losses or gains
         """
         import models.wko.src.example as example
         from models.wko.src.example import HeatProblem
 
         base_folder = Path(example.__file__).resolve().parent.parent
 
+        # ------------------------------------------------------------------------------------------
+        # Pipe heat losses inlcuded
         class HeatingCoolingProblem(HeatProblem):
 
             def energy_system_options(self):
                 options = super().energy_system_options()
-                options["neglect_pipe_heat_losses"] = True
+                options["neglect_pipe_heat_losses"] = False
                 return options
 
             def constraints(self, ensemble_member):
@@ -150,9 +156,54 @@ class TestColdDemand(TestCase):
         energy_conservation_test(heat_problem, results)
         heat_to_discharge_test(heat_problem, results)
 
+        # Check cyclic constraint
         np.testing.assert_allclose(
             results["ATES_226d.Stored_heat"][0], results["ATES_226d.Stored_heat"][-1]
         )
+        # Check heat loss and gain
+        tol_value = 1.0e-6
+        np.testing.assert_array_less(
+            0.0, results["Pipe1.HeatIn.Heat"] - results["Pipe1.HeatOut.Heat"] + tol_value
+        )
+        np.testing.assert_array_less(
+            results["Pipe1_ret.HeatIn.Heat"] - results["Pipe1_ret.HeatOut.Heat"] - tol_value, 0.0
+        )
+
+        # ------------------------------------------------------------------------------------------
+        # Pipe heat losses excluded
+        class HeatingCoolingProblemNoHeatLoss(HeatingCoolingProblem):
+            def energy_system_options(self):
+                options = super().energy_system_options()
+                options["neglect_pipe_heat_losses"] = True
+                return options
+
+        heat_problem = run_esdl_mesido_optimization(
+            HeatingCoolingProblemNoHeatLoss,
+            base_folder=base_folder,
+            esdl_file_name="LT_wko_heating_and_cooling.esdl",
+            esdl_parser=ESDLFileParser,
+            profile_reader=ProfileReaderFromFile,
+            input_timeseries_file="timeseries_2.csv",
+        )
+        results = heat_problem.extract_results()
+
+        demand_matching_test(heat_problem, results)
+        energy_conservation_test(heat_problem, results)
+        heat_to_discharge_test(heat_problem, results)
+
+        # Check cyclic constraint
+        np.testing.assert_allclose(
+            results["ATES_226d.Stored_heat"][0], results["ATES_226d.Stored_heat"][-1]
+        )
+        # Check heat loss and gain
+        tol_value = 1.0e-6
+        np.testing.assert_allclose(
+            0.0, results["Pipe1.HeatIn.Heat"] - results["Pipe1.HeatOut.Heat"], atol=1e-6
+        )
+        np.testing.assert_allclose(
+            0.0, results["Pipe1_ret.HeatIn.Heat"] - results["Pipe1_ret.HeatOut.Heat"], atol=1e-6
+        )
+        # ------------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
