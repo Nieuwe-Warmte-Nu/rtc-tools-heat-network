@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import casadi as ca
@@ -181,7 +182,10 @@ class GasPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationPr
             # Note we always use the gas network type for the naming of variables, independent of
             # the gas mixture used.
             initialized_vars = self._gn_head_loss_class.initialize_variables_nominals_and_bounds(
-                self, NetworkSettings.NETWORK_TYPE_GAS, pipe_name, self.gas_network_settings
+                self,
+                self.gas_network_settings["network_type"],
+                pipe_name,
+                self.gas_network_settings,
             )
             if initialized_vars[0] != {}:
                 self.__gas_pipe_head_bounds[
@@ -254,12 +258,15 @@ class GasPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationPr
         self.__maximum_total_head_loss = self.__get_maximum_total_head_loss()
 
         if options["gas_storage_discharge_variables"]:
-            for storage in self.energy_system_components.get("gas_storage", []):
-                bound_storage_q = self.bounds()[f"{storage}.GasIn.Q"][0]
+            for storage in self.energy_system_components.get("gas_tank_storage", []):
+                bound_storage_q = -self.bounds()[f"{storage}.GasIn.Q"][0]
+                if isinstance(bound_storage_q, Timeseries):
+                    bound_storage_q = copy.deepcopy(bound_storage_q)
+                    bound_storage_q.values[bound_storage_q.values < 0] = 0.0
                 var_name = f"{storage}__Q_discharge"
                 self.__gas_storage_discharge_map[storage] = var_name
                 self.__gas_storage_discharge_var[var_name] = ca.MX.sym(var_name)
-                self.__gas_storage_discharge_bounds[var_name] = (0, -bound_storage_q)
+                self.__gas_storage_discharge_bounds[var_name] = (0, bound_storage_q)
                 self.__gas_storage_discharge_nominals[var_name] = self.variable_nominal(
                     f"{storage}.GasIn.Q"
                 )
@@ -560,7 +567,7 @@ class GasPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationPr
 
         return constraints
 
-    def __gas_storage_discharge_path_constraints(self):
+    def __gas_storage_discharge_path_constraints(self, ensemble_member):
         """
         The discharge variables are added such that two separate goals for charging and discharging
         can be created. The discharging variable has a lower bound of 0 and should always be larger
@@ -568,12 +575,11 @@ class GasPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationPr
         the discharging and afterwards an maximisation of the charging without conflicting goals or
         constraints.
         """
-        # TODO: still add test
         constraints = []
         options = self.energy_system_options()
 
         if options["gas_storage_discharge_variables"]:
-            for storage in self.energy_system_components.get("gas_storage"):
+            for storage in self.energy_system_components.get("gas_tank_storage", []):
                 storage_charge_var = self.state(f"{storage}.GasIn.Q")
                 storage_discharge_var_name = f"{storage}__Q_discharge"
                 storage_discharge_var = self.state(storage_discharge_var_name)
@@ -583,6 +589,8 @@ class GasPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationPr
                 constraints.append(
                     ((storage_discharge_var + storage_charge_var) / nominal, 0.0, np.inf)
                 )
+
+        return constraints
 
     def path_constraints(self, ensemble_member):
         """
@@ -606,6 +614,7 @@ class GasPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationPr
         )
         constraints.extend(self.__flow_direction_path_constraints(ensemble_member))
         constraints.extend(self.__gas_node_hydraulic_power_mixing_path_constraints(ensemble_member))
+        constraints.extend(self.__gas_storage_discharge_path_constraints(ensemble_member))
 
         return constraints
 
