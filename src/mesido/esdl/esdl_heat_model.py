@@ -1007,7 +1007,7 @@ class AssetToHeatComponent(_AssetToComponentBase):
 
         # In this case we only have the secondary side ports, here we assume a air-water HP
         if len(asset.in_ports) == 1 and len(asset.out_ports) == 1:
-            #TODO: the power filled in at the heatpmp should always be the electric power, thus,
+            # TODO: the power filled in at the heatpmp should always be the electric power, thus,
             # the max heat supply should be power*cop
             _, modifiers = self.convert_heat_source(asset)
             return AirWaterHeatPump, modifiers
