@@ -99,8 +99,6 @@ class TestColdDemand(TestCase):
 
         class HeatingCoolingProblem(HeatProblem):
 
-            # TODO: investigate why test fails when heat_losses are neglected.
-            # An issue has been created for this
             def energy_system_options(self):
                 options = super().energy_system_options()
                 options["neglect_pipe_heat_losses"] = True
