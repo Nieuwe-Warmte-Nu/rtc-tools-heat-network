@@ -1652,9 +1652,11 @@ class HeatPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
                                 )
                             )
                 else:
-                    # Note that during cold delivery the line can be colder than the ground temperature.
+                    # Note that during cold delivery the line can be colder than the ground
+                    # temperature.
                     # In this case we have to bound the heat flowing in the line with the ground
-                    # temperature instead, as the line can heat up to at maximum the ground temperature.
+                    # temperature instead, as the line can heat up to at maximum the ground
+                    # temperature.
                     temp = max(parameters[f"{p}.temperature"], parameters[f"{p}.T_ground"])
                     assert big_m > 0.0
 
