@@ -1594,10 +1594,6 @@ class HeatPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
         for p in self.energy_system_components.get("heat_pipe", []):
             cp = parameters[f"{p}.cp"]
             rho = parameters[f"{p}.rho"]
-            # Note that during cold delivery the line can be colder than the ground temperature.
-            # In this case we have to bound the heat flowing in the line with the ground
-            # temperature instead, as the line can heat up to at maximum the ground temperature.
-            temp = max(parameters[f"{p}.temperature"], parameters[f"{p}.T_ground"])
 
             flow_dir_var = self._heat_pipe_to_flow_direct_map[p]
             flow_dir = self.state(flow_dir_var)
@@ -1619,6 +1615,7 @@ class HeatPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
 
             for heat in [scaled_heat_in, scaled_heat_out]:
                 if self.energy_system_options()["neglect_pipe_heat_losses"]:
+                    temp = parameters[f"{p}.temperature"]
                     if len(temperatures) == 0:
                         constraints.append(
                             (
@@ -1630,7 +1627,6 @@ class HeatPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
                     else:
                         for temperature in temperatures:
                             temperature_is_selected = self.state(f"{carrier}_{temperature}")
-                            temperature = max(temperature, parameters[f"{p}.T_ground"])
                             constraints.append(
                                 (
                                     (
@@ -1656,6 +1652,12 @@ class HeatPhysicsMixin(BaseComponentTypeMixin, CollocatedIntegratedOptimizationP
                                 )
                             )
                 else:
+                    # Note that during cold delivery the line can be colder than the ground
+                    # temperature.
+                    # In this case we have to bound the heat flowing in the line with the ground
+                    # temperature instead, as the line can heat up to at maximum the ground
+                    # temperature.
+                    temp = max(parameters[f"{p}.temperature"], parameters[f"{p}.T_ground"])
                     assert big_m > 0.0
 
                     carrier = parameters[f"{p}.carrier_id"]
