@@ -31,6 +31,8 @@ run_pipe_compare.py
 .venv/
 # Femke Janssen
 *_fj_*
+# Jaime Santiago Patterson
+*_jsp_*
 # Ignore ESDL files created by workflows
 *_GrowOptimized.esdl 
 *_GrowOptimized_esdl_string.esdl 
