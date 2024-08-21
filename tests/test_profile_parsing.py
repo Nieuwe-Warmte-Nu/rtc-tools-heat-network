@@ -29,8 +29,8 @@ class MockInfluxDBProfileReader(InfluxDBProfileReader):
         return self._loaded_profiles[profile.id]
 
 
-class TestProfileLoading(unittest.TestCase):
-    def test_insufficient_capacity(self):
+class TestPotentialErros(unittest.TestCase):
+    def test_asset_potential_errors(self):
         """
         This test checks that the error checks in the code for sufficient installed cool/heatig
         capacity of a cold/heat demand is sufficient (grow_workflow)
@@ -77,6 +77,24 @@ class TestProfileLoading(unittest.TestCase):
             " larger than the maximum of the heat demand profile 1957.931MW",
             True,
         )
+        np.testing.assert_equal(
+            logs_list[3].msg == "Asset insufficient installed capacity: please increase the"
+            " installed power or reduce the demand profile peak value of the demand(s) listed.",
+            True,
+        )
+        # d
+        np.testing.assert_equal(
+            logs_list[4].msg == "Asset HeatingDemand_2ab9: This asset is currently a"
+            " GenericConsumer please change it to a HeatingDemand",
+            True,
+        )
+        np.testing.assert_equal(
+            logs_list[5].msg == "Incorrect asset type: please update.",
+            True,
+        )
+
+
+class TestProfileLoading(unittest.TestCase):
 
     def test_loading_from_influx(self):
         """
@@ -233,7 +251,8 @@ class TestProfileLoading(unittest.TestCase):
 if __name__ == "__main__":
     # unittest.main()
     a = TestProfileLoading()
-    a.test_insufficient_capacity()
+    b = TestPotentialErros()
+    b.test_asset_potential_errors()
     a.test_loading_from_influx()
     a.test_loading_from_csv()
     a.test_loading_from_xml()
