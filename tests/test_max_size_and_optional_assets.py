@@ -1,12 +1,11 @@
 from pathlib import Path
 from unittest import TestCase
 
+from mesido.esdl.esdl_parser import ESDLFileParser
+from mesido.esdl.profile_parser import ProfileReaderFromFile
+from mesido.util import run_esdl_mesido_optimization
+
 import numpy as np
-
-from rtctools.util import run_optimization_problem
-
-from rtctools_heat_network.esdl.esdl_parser import ESDLFileParser
-from rtctools_heat_network.esdl.profile_parser import ProfileReaderFromFile
 
 from utils_tests import demand_matching_test, energy_conservation_test, heat_to_discharge_test
 
@@ -25,7 +24,7 @@ class TestMaxSizeAggregationCount(TestCase):
         source will be placed due to the minimization of the cost (which cost is this?, I assume
         operational cost) and installation cost. The placement behaviour is further tested in a
         second case by adding an optional ates and buffer. However, these 2 additional optional
-        assets should not be placed by the optmizer because of milp losses.
+        assets should not be placed by the optmizer because of heat losses.
 
         Checks:
         - Check that source 1 is utilized and also placed
@@ -45,7 +44,7 @@ class TestMaxSizeAggregationCount(TestCase):
         base_folder = Path(run_ates.__file__).resolve().parent.parent
 
         # This is an optimization done over a few days
-        solution = run_optimization_problem(
+        solution = run_esdl_mesido_optimization(
             HeatProblem,
             base_folder=base_folder,
             esdl_file_name="test_case_small_network_with_ates_with_buffer.esdl",
@@ -94,7 +93,7 @@ class TestMaxSizeAggregationCount(TestCase):
         )
 
         # Test that cost only exist for 2 and not for 1. Note the tolerances
-        # to avoid test failing when milp losses slightly change
+        # to avoid test failing when heat losses slightly change
         np.testing.assert_allclose(var_cost_1, 0.0, atol=1e-9)
         np.testing.assert_allclose(
             var_cost_2,
@@ -123,7 +122,7 @@ class TestMaxSizeAggregationCount(TestCase):
             rtol=1.0e-2,
         )
 
-        # Since the buffer and ates are not optional they must consume some milp to compensate
+        # Since the buffer and ates are not optional they must consume some heat to compensate
         # losses as the buffer has a minimum fraction volume of 5%.
         # Therefore, we can check the max_size constraint.
         np.testing.assert_allclose(
@@ -143,9 +142,9 @@ class TestMaxSizeAggregationCount(TestCase):
         base_folder = Path(run_ates.__file__).resolve().parent.parent
 
         # This is the same problem, but now with the buffer and ates also optional.
-        # Therefore, we expect that the ates and buffer are no longer placed to avoid their milp
+        # Therefore, we expect that the ates and buffer are no longer placed to avoid their heat
         # losses. This allows us to check if their placement constraints are proper.
-        solution = run_optimization_problem(
+        solution = run_esdl_mesido_optimization(
             HeatProblem,
             base_folder=base_folder,
             esdl_file_name="test_case_small_network_with_ates_with_buffer_all_optional.esdl",
