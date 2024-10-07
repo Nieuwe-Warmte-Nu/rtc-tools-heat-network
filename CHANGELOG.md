@@ -1,6 +1,7 @@
-# [Unreleased] - 2024-09-20
+# [Unreleased] - 2024-10-07
 
 ## Added
+- Gas physics documentation
 - Test case: Head loss validation with pandapipes.
 - Example on ESDL file creation using pyESDL for the PoC Tutorial.
 - Electrolyzer specific power curve valley location specified optionally specified in ESDL.
