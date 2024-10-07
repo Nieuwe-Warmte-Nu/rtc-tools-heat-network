@@ -1,7 +1,9 @@
 # [Unreleased] - 2024-09-20
 
 ## Added
-- Test case: Head loss validation with pandapipes
+- Test case: Head loss validation with pandapipes.
+- Example on ESDL file creation using pyESDL for the PoC Tutorial.
+- Electrolyzer specific power curve valley location specified optionally specified in ESDL.
 - Grow_workflow: Solver class created to allow the use of CPLEX as a solver for EndScenarioSizing classes. 
 
 ## Changed
