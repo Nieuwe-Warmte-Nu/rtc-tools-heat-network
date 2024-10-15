@@ -1,6 +1,8 @@
 # [Unreleased] - 2024-10-07
 
 ## Added
+- Limit the available pipe classes connetced to heat/gas demand/producers
+- Add demands and sources to the topology object to have easy access to the connected pipes/cables later on
 - Heating and cooling example case added (2 heating demands, 1 cold demand, hot and cold producer, WKO as seasonal storage)
 - Gas physics documentation
 - Gas & electricity 1st version of physics documentation
@@ -17,6 +19,7 @@
 - Bugfix: Fix on nominals in electricity cables and gas pipes. Fix on nominals for nodes with logical links.
  
 ## Fixed
+- Bug fix: machine error/rounding with updating lower bound values in the grow_workflow after stage 1
 - documentation: heat physics tank storage
 - bug fix in grow_workflow (heat networks), changed minimum velocity from 0 to default value
 - addition to tests checking the minimum velocity setting in a workflow
