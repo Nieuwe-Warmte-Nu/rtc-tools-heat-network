@@ -4,6 +4,8 @@
 - Default database for gas pipe dimensions based on the ASA pipe schedule with thicknesses from the standard class
 
 ## Changed
+- Write output to json also saves the solver statistics.
+- Updates in asset conversion from ESDL to pycml; gas and heat pipe split, generic conversion better specified.
 - Adapt profiles for heating and cooling peak day seperately & add test case
 
 ## Fixed
