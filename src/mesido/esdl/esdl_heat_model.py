@@ -12,6 +12,7 @@ from mesido.esdl.asset_to_component_base import (
 )
 from mesido.esdl.common import Asset
 from mesido.esdl.esdl_model_base import _ESDLModelBase
+from mesido.potential_errors import MesidoAssetIssueType, get_potential_errors
 from mesido.pycml.component_library.milp import (
     ATES,
     AirWaterHeatPump,
@@ -911,20 +912,25 @@ class AssetToHeatComponent(_AssetToComponentBase):
         params = {}
 
         if params_t["Primary"]["T_supply"] < params_t["Secondary"]["T_supply"]:
-            logger.error(
-                f"{asset.name} has a primary side supply temperature, "
-                f"{params_t['Primary']['T_supply']}, that is higher than the secondary supply , "
-                f"{params_t['Secondary']['T_supply']}. This is not possible as the HEX can only "
-                "transfer milp from primary to secondary."
+            get_potential_errors().add_potential_issue(
+                MesidoAssetIssueType.HEAT_EXCHANGER_TEMPERATURES,
+                asset.id,
+                f"Asset named {asset.name}: The supply temperature on the primary side "
+                f"of the heat exchanger ({params_t['Primary']['T_supply']}°C) should be larger "
+                f"than the supply temperature on the secondary side "
+                f"({params_t['Secondary']['T_supply']}°C), as the heat exchanger can only "
+                f"transfer heat from primary to secondary.",
             )
-            assert params_t["Primary"]["T_supply"] >= params_t["Secondary"]["T_supply"]
         if params_t["Primary"]["T_return"] < params_t["Secondary"]["T_return"]:
-            logger.error(
-                f"{asset.name} has a primary side return temperature that is lower than the "
-                f"secondary return temperature. This is not possible as the HEX can only transfer "
-                f"milp from primary to secondary."
+            get_potential_errors().add_potential_issue(
+                MesidoAssetIssueType.HEAT_EXCHANGER_TEMPERATURES,
+                asset.id,
+                f"Asset named {asset.name}: The return temperature on the primary side "
+                f"of the heat exchanger ({params_t['Primary']['T_return']}°C) should be larger "
+                f"than the return temperature on the secondary side "
+                f"({params_t['Secondary']['T_return']}°C), as the heat exchanger can only "
+                f"transfer heat from primary to secondary.",
             )
-            assert params_t["Primary"]["T_return"] >= params_t["Secondary"]["T_return"]
 
         if asset.asset_type == "GenericConversion":
             max_power = asset.attributes["power"] if asset.attributes["power"] else math.inf
@@ -936,12 +942,18 @@ class AssetToHeatComponent(_AssetToComponentBase):
                 * (params_t["Primary"]["T_supply"] - params_t["Secondary"]["T_return"])
                 / 2.0
             )
-
-        max_heat_transport = (
-            params_t["Primary"]["T_supply"]
-            * max_power
-            / (params_t["Primary"]["T_supply"] - params_t["Primary"]["T_return"])
-        )
+            if max_power == 0.0:
+                max_power = (
+                    asset.attributes["capacity"] if asset.attributes["capacity"] else math.inf
+                )
+        # This default delta temperature is used when on the primary or secondary side the
+        # temperature difference is 0.0. It is set to 10.0 to ensure that maximum/nominal
+        # flowrates and heat transport are set at realistic values.
+        default_dt = 10.0
+        dt_prim = params_t["Primary"]["T_supply"] - params_t["Primary"]["T_return"]
+        dt_prim = dt_prim if dt_prim > 0.0 else default_dt
+        params_t["Primary"]["dT"] = dt_prim
+        max_heat_transport = params_t["Primary"]["T_supply"] * max_power / (dt_prim)
 
         prim_heat = dict(
             HeatIn=dict(
@@ -952,14 +964,12 @@ class AssetToHeatComponent(_AssetToComponentBase):
                 Heat=dict(min=-max_heat_transport, max=max_heat_transport, nominal=max_power / 2.0),
                 Hydraulic_power=dict(nominal=params_q["Primary"]["Q_nominal"] * 16.0e5),
             ),
-            Q_nominal=max_power
-            / (
-                2
-                * self.rho
-                * self.cp
-                * (params_t["Primary"]["T_supply"] - params_t["Primary"]["T_return"])
-            ),
+            Q_nominal=max_power / (2 * self.rho * self.cp * (dt_prim)),
         )
+
+        dt_sec = params_t["Secondary"]["T_supply"] - params_t["Secondary"]["T_return"]
+        dt_sec = dt_sec if dt_sec > 0.0 else default_dt
+        params_t["Secondary"]["dT"] = dt_sec
         sec_heat = dict(
             HeatIn=dict(
                 Heat=dict(min=-max_heat_transport, max=max_heat_transport, nominal=max_power / 2.0),
@@ -969,13 +979,7 @@ class AssetToHeatComponent(_AssetToComponentBase):
                 Heat=dict(min=-max_heat_transport, max=max_heat_transport, nominal=max_power / 2.0),
                 Hydraulic_power=dict(nominal=params_q["Secondary"]["Q_nominal"] * 16.0e5),
             ),
-            Q_nominal=max_power
-            / (
-                2
-                * self.cp
-                * self.rho
-                * (params_t["Secondary"]["T_supply"] - params_t["Secondary"]["T_return"])
-            ),
+            Q_nominal=max_power / (2 * self.cp * self.rho * (dt_sec)),
         )
         params["Primary"] = {**params_t["Primary"], **params_q["Primary"], **prim_heat}
         params["Secondary"] = {
