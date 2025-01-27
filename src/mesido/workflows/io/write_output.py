@@ -20,6 +20,7 @@ import mesido.esdl.esdl_parser
 from mesido.constants import GRAVITATIONAL_CONSTANT
 from mesido.esdl.edr_pipe_class import EDRPipeClass
 from mesido.network_common import NetworkSettings
+from mesido.post_processing.post_processing_utils import pipe_pressure, pipe_velocity
 from mesido.workflows.utils.helpers import _sort_numbered
 
 import numpy as np
@@ -28,7 +29,6 @@ import pandas as pd
 
 from rtctools._internal.alias_tools import AliasDict
 from rtctools.optimization.timeseries import Timeseries
-
 
 logger = logging.getLogger("mesido")
 
@@ -1171,18 +1171,14 @@ class ScenarioOutput:
                         variables_one_hydraulic_system.append("PostProc.Velocity")
                         variables_two_hydraulic_system.append("PostProc.Velocity")
                         # Velocity at the pipe outlet [m/s]
-                        post_processed["PostProc.Velocity"] = (
-                            results[f"{asset_name}.{commodity}Out.Q"]
-                            / parameters[f"{asset_name}.area"]
+                        post_processed["PostProc.Velocity"] = pipe_velocity(
+                            asset_name, commodity, results, parameters
                         )
                         variables_one_hydraulic_system.append("PostProc.Pressure")
                         # TODO: seems unnecessary, pipes always only have 1 hydraulic system
                         variables_two_hydraulic_system.append("PostProc.Pressure")
-                        post_processed["PostProc.Pressure"] = (
-                            results[f"{asset_name}.{commodity}In.H"]  # m
-                            * GRAVITATIONAL_CONSTANT  # m/s2
-                            * parameters[f"{asset_name}.density"]  # g/m3
-                            / 1e3
+                        post_processed["PostProc.Pressure"] = pipe_pressure(
+                            asset_name, commodity, results, parameters
                         )  # Pa
 
                     # Depending on the port set, different carriers are assigned
