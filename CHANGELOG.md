@@ -1,4 +1,4 @@
-# [Unreleased] - 2024-12-11
+# [Unreleased] - 2025-02-07
 
 ## Added
 - xx
@@ -7,7 +7,7 @@
 - Updated Casadi to 3.6.7 with gil fixes (see https://github.com/casadi/casadi/releases/tag/nightly-gil_release)
 
 ## Fixed
-- xx
+- Bug: pipe class bounds when pipe DN none results from stage 1 in the grow_workflow
 
 # [0.1.8.4] - 2024-12-11
 
