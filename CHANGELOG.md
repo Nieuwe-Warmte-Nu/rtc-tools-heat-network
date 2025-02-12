@@ -28,6 +28,8 @@
 - Bugfix: head loss test case when minimum_velocity = 0.0
 - Bugs: state update of heat pump, heat buffer volume & ates charge rates update in ESDL, heat storage asset data output to influxDB  
 - Bugfix: get_density + get_internal_energy updated to ensure it checks commodity type for heat instead of the carrier name
+- Bug: pipe class bounds when pipe DN none results from stage 1 in the grow_workflow
+
 
 # [0.1.8.4] - 2024-12-11
 
@@ -50,7 +52,8 @@
 - xx
 
 ## Fixed
-- xx
+- Bugfix: same mip gap settings for all solvers in grow_workflow.
+- Bugfix: head loss test case when minimum_velocity = 0.0
 
 
 # [0.1.8.2] - 2024-11-15
