@@ -7,7 +7,7 @@ MESIDO offers the posibility to model the cost and revenues based on the design 
 The asset cost modelling includes both the CAPEX and OPEX over the time-horizon of the optimization.
 
 Asset Cost Components
---------------------
+---------------------
 
 The asset cost modelling breaks down in four categories in which both the CAPEX and OPEX aspects are captured: 
 
@@ -98,23 +98,22 @@ Since assets may have different depreciation periods, an Equivalent Annual Cost 
 
 Given that the OPEX :math:numref:`eq:opex` is already calculated on an annual basis, only the CAPEX needs to be converted to an annualized equivalent value using an EAC factor :math:`F_{a}`. This factor is computed as based on a discount rate (as an annual percentage) and the technical life (in years) of the asset, as follows:
 
-
-.. math::
+.. math::    
     F_{a} = 
     \begin{cases} 
     \frac{1}{n} & \text{if } r = 0 \\ 
     \frac{r}{1 - (1 + r)^{-n}} & \text{if } r > 0 
     \end{cases}
-    :label: eq:eac_factor
+
 
 See this `link <https://www.investopedia.com/terms/e/eac.asp>`_ for more details.
 
 This EAC factor, :math:`F_{a}`, is then applied to the asset's CAPEX to calculate the EAC of the initial investment or installation cost, as follows:
 
 .. math::
-    :label: eq:capex_eac2
+    :label: eq:capex_eac
 
-    Cost^{a}_{CAPEX_{EAC}} = (Cost^{a}_{investment} +  Cost^{a}_{installation}) * F_{a}
+    Cost^{a}_{CAPEX_{EAC}} = (Cost^{a}_{investment} + Cost^{a}_{installation}) * F_{a}
 
 Therefore, the discounted total cost becomes:
 
@@ -130,8 +129,4 @@ The technical life is a real number greater than 0. Both the discount rate and t
     :figwidth: 6.94792in
     :align: center
 
-    Inverse Equivalent Annual Cost factor ( :math:`F_a^{-1}` ) versus discount rate ( `r` ) for different technical life values.  
-
-Total cost
-~~~~~~~~~~
-
+    Inverse Equivalent Annual Cost factor ( :math:`F_a^{-1}` ) versus discount rate ( `r` ) for different technical life values.
