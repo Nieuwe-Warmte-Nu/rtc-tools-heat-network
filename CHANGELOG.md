@@ -14,6 +14,7 @@
 - Error check for NaN values in profile data (csv & influxDB)
 
 ## Changed
+- Updated the Financial section of the documentation to explain the annualized discounted costs calculation.
 - Write output to json also saves the solver statistics.
 - Updates in asset conversion from ESDL to pycml; gas and heat pipe split, generic conversion better specified.
 - Adapt profiles for heating and cooling peak day separately & add test case
