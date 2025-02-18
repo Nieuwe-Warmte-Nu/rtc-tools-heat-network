@@ -1,4 +1,77 @@
-# [Unreleased] - 2024-10-07
+# [Unreleased] - 2025-02-13
+
+## Added
+- xx
+
+## Changed
+- xx
+- xx
+
+## Fixed
+- xx
+
+# [0.1.8.6] - 2025-02-18
+
+## Added
+- xx
+
+## Changed
+- Updated the Financial section of the documentation to explain the annualized discounted costs calculation
+
+## Fixed
+
+
+# [0.1.8.5] - 2025-02-12
+
+## Added
+- xx
+
+## Changed
+- Updated Casadi to 3.6.7 with gil fixes (see https://github.com/casadi/casadi/releases/tag/nightly-gil_release)
+- Upgraded rtctools to version 2.6.1
+
+## Fixed
+- Bug: pipe class bounds when pipe DN none results from stage 1 in the grow_workflow
+
+
+# [0.1.8.4] - 2024-12-11
+
+## Added
+- More of the existing classes added to __init_ for local runs using the grow_workflow
+
+## Changed
+- xxx
+
+## Fixed
+- Bugs: state update of heat pump, heat buffer volume & ates charge rates update in ESDL, heat storage asset data output to influxDB   
+
+
+# [0.1.8.3] - 2024-12-02
+
+## Added
+- Added function to make pickle usable (exceptions) in the OMOTES back end 
+
+## Changed
+- xx
+
+## Fixed
+- xx
+
+
+# [0.1.8.2] - 2024-11-15
+
+## Added
+- xx
+
+## Changed
+- xx
+
+## Fixed
+- Bugfix: same mip gap settings for all solvers in grow_workflow.
+- Bugfix: head loss test case when minimum_velocity = 0.0
+
+
+# [0.1.8 & 0.1.8.1] - 2024-11-07
 
 ## Added
 - Added MESIDO error exception class to raise applicable potential errors in a workflow & include required info for feedback in the mapeditor
@@ -18,7 +91,8 @@
 - Bugfix: No longer required to provide a power at the heating demands when a profile has been added.
 - Bugfix: Scaling fix on ATES temperature variable when temperature modelling not used.
 - Bugfix: Fix on nominals in electricity cables and gas pipes. Fix on nominals for nodes with logical links.
-- Pipeline is only run when pull request is ready for review and synchronized or when opened, as well as when a pull request is merged to main. 
+- Pipeline is only run when pull request is ready for review and synchronized or when opened, as well as when a pull request is merged to main.
+- Speedup: Changed the way daily average profiles are created from hourly profiles to speed up the conversion.
  
 ## Fixed
 - Bug fix: Logical links: e_boiler & gas boiler update to use energy values 
