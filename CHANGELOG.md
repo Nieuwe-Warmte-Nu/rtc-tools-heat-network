@@ -1,16 +1,6 @@
-# [Unreleased] - 2025-02-13
 
-## Added
-- xx
 
-## Changed
-- xx
-- xx
-
-## Fixed
-- xx
-
-# [0.1.8.6] - 2025-02-18
+# [Unreleased] - 2025-02-20
 
 ## Added
 - xx
@@ -19,7 +9,7 @@
 - Updated the Financial section of the documentation to explain the annualized discounted costs calculation
 
 ## Fixed
-
+- xx
 
 # [0.1.8.5] - 2025-02-12
 
