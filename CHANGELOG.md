@@ -82,8 +82,6 @@
 ## Fixed
 - Bugfix: same mip gap settings for all solvers in grow_workflow.
 - Bugfix: head loss test case when minimum_velocity = 0.0
-- Bugfix: same mip gap settings for all solvers in grow_workflow.
-- Bugfix: head loss test case when minimum_velocity = 0.0
 
 
 # [0.1.8 & 0.1.8.1] - 2024-11-07
