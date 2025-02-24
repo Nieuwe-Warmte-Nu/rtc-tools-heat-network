@@ -2,6 +2,11 @@ import datetime
 
 import esdl
 
+from mesido.esdl.esdl_mixin import ESDLMixin
+from mesido.esdl.esdl_parser import ESDLFileParser
+from mesido.esdl.profile_parser import ProfileReaderFromFile
+from mesido.techno_economic_mixin import TechnoEconomicMixin
+
 import numpy as np
 
 from rtctools.data.storage import DataStore
@@ -17,12 +22,6 @@ from rtctools.optimization.single_pass_goal_programming_mixin import (
     SinglePassGoalProgrammingMixin,
 )
 from rtctools.util import run_optimization_problem
-
-
-from rtctools_heat_network.esdl.esdl_mixin import ESDLMixin
-from rtctools_heat_network.esdl.esdl_parser import ESDLFileParser
-from rtctools_heat_network.esdl.profile_parser import ProfileReaderFromFile
-from rtctools_heat_network.techno_economic_mixin import TechnoEconomicMixin
 
 
 class TargetDemandGoal(Goal):
@@ -211,6 +210,7 @@ class HeatProblemPlacingOverTime(HeatProblem):
         """
         options = super().energy_system_options()
         options["include_asset_is_realized"] = True
+        options["neglect_pipe_heat_losses"] = True
 
         return options
 
@@ -254,10 +254,12 @@ class HeatProblemPlacingOverTime(HeatProblem):
 
         # Constraints for investment speed, please note that we need to enforce index 0 to be 0.
         for s in self.energy_system_components.get("heat_source", []):
-            inv_made = self.state_vector(f"{s}__cumulative_investments_made_in_eur")
+            inv_made = self.__state_vector_scaled(
+                f"{s}__cumulative_investments_made_in_eur", ensemble_member
+            )
             nominal = self.variable_nominal(f"{s}__cumulative_investments_made_in_eur")
             inv_cap = 2.5e5
-            constraints.append((inv_made[0], 0.0, 0.0))
+            constraints.append((inv_made[0] / nominal, 0.0, 200000.0))
             for i in range(1, len(self.times())):
                 constraints.append(
                     (((inv_made[i] - inv_made[i - 1]) * nominal - inv_cap) / nominal, -np.inf, 0.0)
@@ -269,6 +271,16 @@ class HeatProblemPlacingOverTime(HeatProblem):
             constraints.append((heat_ates, 0.0, 0.0))
 
         return constraints
+
+    def __state_vector_scaled(self, variable, ensemble_member):
+        """
+        This functions returns the casadi symbols scaled with their nominal for the entire time
+        horizon.
+        """
+        canonical, sign = self.alias_relation.canonical_signed(variable)
+        return (
+            self.state_vector(canonical, ensemble_member) * self.variable_nominal(canonical) * sign
+        )
 
     def times(self, variable=None):
         """
